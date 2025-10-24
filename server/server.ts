@@ -28,8 +28,12 @@ const PORT = Number(process.env.PORT) || 3000;
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
     'https://unitrade-blue.vercel.app',
-    'https://www.unitrade-blue.vercel.app',
-    'https://unitrade-yrd9.onrender.com'
+    'https://unitrade-muffynxs-projects.vercel.app',
+    'https://unitrade-yrd9.onrender.com',
+
+            'https://unitrade-h0j3nn5fj-muffynxs-projects.vercel.app',
+                        
+                'https://unitrade-git-main-muffynxs-projects.vercel.app',
   ]
   : [
     'http://localhost:5173',
