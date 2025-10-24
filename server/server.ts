@@ -23,18 +23,18 @@ const app = express();
 // ✅ Convert PORT to number
 const PORT = Number(process.env.PORT) || 3000;
 
-// ✅ CORS setup
+// ✅ CORS setup: Correctly configured to allow Vercel domain in production
 const allowedOrigins =
   process.env.NODE_ENV === 'production'
     ? [
-        'https://unitrade-blue.vercel.app',
-        'https://www.unitrade-blue.vercel.app',
-      ]
+      'https://unitrade-blue.vercel.app',
+      'https://www.unitrade-blue.vercel.app',
+    ]
     : [
-        'http://localhost:5173',
-        'http://localhost:3000',
-        'https://unitrade-yrd9.onrender.com',
-      ];
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'https://unitrade-yrd9.onrender.com', // Added Render URL for internal testing
+    ];
 
 app.use(
   cors({
@@ -78,4 +78,5 @@ app.get('/', (_req, res) => {
 // Listen
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`CORS allowed origins: ${allowedOrigins.join(', ')}`); // Log origins for debugging
 });
