@@ -27,14 +27,14 @@ const PORT = Number(process.env.PORT) || 3000;
 // -------------------
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
-      'https://unitrade-blue.vercel.app', // Production Main URL
-      'https://unitrade-yrd9.onrender.com', // Internal Render URL
-    ]
+    'https://unitrade-blue.vercel.app', // Production Main URL
+    'https://unitrade-yrd9.onrender.com', // Internal Render URL
+  ]
   : [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'https://unitrade-yrd9.onrender.com',
-    ];
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://unitrade-yrd9.onrender.com',
+  ];
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -43,20 +43,28 @@ app.use(cors({
 
     const normalizedOrigin = origin.toLowerCase().replace(/\/$/, ''); // remove trailing slash
 
-    console.log('CORS check origin:', normalizedOrigin);
+    // ➡️ DEBUG LOG: แสดงค่าที่ Server เห็น
+    console.log(`CORS DEBUG: Origin=${normalizedOrigin}, NODE_ENV=${process.env.NODE_ENV}`);
 
     // 1️⃣ Check direct allowed origins
-    if (allowedOrigins.includes(normalizedOrigin)) return callback(null, true);
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      console.log('CORS DEBUG: Matched allowedOrigins list.');
+      return callback(null, true);
+    }
 
     // 2️⃣ Dynamic Vercel Preview check (production only)
-    // รองรับทุก preview domain: https://<something>-muffynxs-projects.vercel.app
-    if (process.env.NODE_ENV === 'production' &&
-        normalizedOrigin.match(/^https:\/\/[a-z0-9-]+-muffynxs-projects\.vercel\.app$/)) {
+    const vercelPreviewPattern = /^https:\/\/[a-z0-9-]+-muffynxs-projects\.vercel\.app$/;
+    const isVercelPreview = normalizedOrigin.match(vercelPreviewPattern);
+
+    if (process.env.NODE_ENV === 'production' && isVercelPreview) {
+      console.log('CORS DEBUG: Matched Vercel Dynamic Preview.');
       return callback(null, true);
     }
 
     // 3️⃣ Block if not allowed
-    return callback(new Error(`CORS blocked for origin: ${origin}`));
+    // ➡️ DEBUG LOG: แสดงสถานะการบล็อกอย่างชัดเจน
+    console.error(`CORS DEBUG: Blocked! Vercel check result: ${isVercelPreview ? 'True' : 'False'}.`);
+    return callback(new Error(`CORS blocked for origin: ${origin}. Current NODE_ENV: ${process.env.NODE_ENV}.`));
   },
   credentials: true,
 }));
