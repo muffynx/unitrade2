@@ -24,10 +24,12 @@ app.set('trust proxy', true);
 
 // Middleware
 app.use(cors({ 
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://unitrade-blue.vercel.app/'] 
-    : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
-  credentials: true 
+  origin: [
+    'https://unitrade-blue.vercel.app',
+    'http://localhost:5173', 
+    'http://localhost:5174', 
+    // เพิ่ม URL อื่นๆ ที่คุณอนุญาต
+  ],
 }));
 app.use(express.json());
 
