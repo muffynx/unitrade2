@@ -19,33 +19,48 @@ import reviewRoutes from './routes/reviews';
 dotenv.config();
 
 const app = express();
-
-// ✅ Convert PORT to number
 const PORT = Number(process.env.PORT) || 3000;
 
-// ✅ CORS setup: Correctly configured to allow Vercel domain in production
-const allowedOrigins =
-  process.env.NODE_ENV === 'production'
-    ? [
+// -------------------
+// ✅ CORS Setup
+// -------------------
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? [
       'https://unitrade-blue.vercel.app',
       'https://www.unitrade-blue.vercel.app',
     ]
-    : [
+  : [
       'http://localhost:5173',
       'http://localhost:3000',
-      'https://unitrade-yrd9.onrender.com', // Added Render URL for internal testing
+      'https://unitrade-yrd9.onrender.com',
     ];
 
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // Allow server-to-server or Postman
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    }
+  },
+  credentials: true,
+}));
 
+// Preflight OPTIONS request
+app.options('*', cors({
+  origin: allowedOrigins,
+  credentials: true,
+}));
+
+// -------------------
+// Middleware
+// -------------------
 app.use(express.json());
 
-// MongoDB connection
+// -------------------
+// MongoDB Connection
+// -------------------
 if (!process.env.MONGODB_URI) {
   throw new Error('❌ MONGODB_URI is not defined');
 }
@@ -55,7 +70,9 @@ mongoose
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch((err) => console.error('❌ MongoDB connection error:', err));
 
+// -------------------
 // Routes
+// -------------------
 app.use('/api/auth', authRoutes);
 app.use('/api/product', productRoutes);
 app.use('/api/products', productRoutes);
@@ -75,8 +92,10 @@ app.get('/', (_req, res) => {
   res.send('<h1>✅ UniTrade API is running successfully</h1>');
 });
 
-// Listen
+// -------------------
+// Start Server
+// -------------------
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`CORS allowed origins: ${allowedOrigins.join(', ')}`); // Log origins for debugging
+  console.log(`CORS allowed origins: ${allowedOrigins.join(', ')}`);
 });
