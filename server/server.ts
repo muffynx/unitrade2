@@ -29,6 +29,7 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
     'https://unitrade-blue.vercel.app',
     'https://www.unitrade-blue.vercel.app',
+    'https://unitrade-yrd9.onrender.com'
   ]
   : [
     'http://localhost:5173',
