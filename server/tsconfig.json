@@ -2,7 +2,12 @@
   "compilerOptions": {
     // Output Configuration
     "rootDir": ".",
-    "outDir": "./dist",
+    "outDir": "dist",
+
+
+
+    "strict": true,
+
 
     // Module Settings
     "module": "CommonJS",
@@ -12,7 +17,7 @@
     "resolveJsonModule": true,
 
     // Type Checking
-    "strict": false,
+    //"strict": false,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "noImplicitThis": true,
