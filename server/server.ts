@@ -15,27 +15,32 @@ import adminRoutes from "./routes/admin";
 import notificationRoutes from './routes/Notification';
 import reviewRoutes from './routes/reviews';
 
+// Load environment variables from server/.env
 dotenv.config();
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ ต้องตั้งค่า trust proxy ก่อน middleware อื่นๆ
+// ✅ ต้องตั้งค่า trust proxy ก่อน middleware อื่นๆ สำหรับการใช้งานบน Render/Vercel
 app.set('trust proxy', true);
 
 // Middleware
 app.use(cors({ 
-  origin: [
-    'https://unitrade-blue.vercel.app',
-    'http://localhost:5173', 
-    'http://localhost:5174', 
-    // เพิ่ม URL อื่นๆ ที่คุณอนุญาต
-  ],
+    // กำหนด Origin ที่อนุญาต
+    origin: [
+      'https://unitrade-blue.vercel.app', // Production Frontend URL (ไม่มี / ปิดท้าย)
+      'http://localhost:5173',           // Local Development
+      'http://localhost:5174', 
+      'http://localhost:5175',
+    ],
+    // ✅ สำคัญ: ต้องใส่ credentials: true เพื่อให้ส่ง Cookie/JWT ไปกับ request ได้
+    credentials: true 
 }));
 app.use(express.json());
 
 // MongoDB Connection
 if (!process.env.MONGODB_URI) {
-  throw new Error('MONGODB_URI is not defined');
+    throw new Error('MONGODB_URI is not defined');
 }
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ Connected to MongoDB'))
@@ -57,7 +62,7 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.get('/', (_req, res) => {
-  res.send('<h1>UniTrade API is running</h1>');
+    res.send('<h1>UniTrade API is running</h1>');
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
