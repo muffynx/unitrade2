@@ -19,21 +19,26 @@ import reviewRoutes from './routes/reviews';
 
 dotenv.config();
 
+// -------------------
+// Express App
+// -------------------
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
 // -------------------
-// ✅ CORS Setup
+// Print environment info
+// -------------------
+console.log('🛠️ NODE_ENV:', process.env.NODE_ENV);
+console.log('🛠️ PORT:', PORT);
+
+// -------------------
+// CORS Setup
 // -------------------
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
     'https://unitrade-blue.vercel.app',
-    'https://unitrade-muffynxs-projects.vercel.app',
-    'https://unitrade-yrd9.onrender.com',
-
-            'https://unitrade-h0j3nn5fj-muffynxs-projects.vercel.app',
-                        
-                'https://unitrade-git-main-muffynxs-projects.vercel.app',
+    'https://www.unitrade-blue.vercel.app',
+    'https://unitrade-yrd9.onrender.com'
   ]
   : [
     'http://localhost:5173',
@@ -50,8 +55,7 @@ app.use(cors({
   credentials: true,
 }));
 
-// ❌ Removed the problematic app.options('*', ...) block.
-// The app.use(cors({...})) above is sufficient to handle preflight OPTIONS requests for all routes.
+console.log('🔑 CORS allowed origins:', allowedOrigins.join(', '));
 
 // -------------------
 // Middleware
@@ -94,7 +98,7 @@ if (process.env.NODE_ENV === 'production') {
   const buildPath = path.join(__dirname, '../client/dist'); // adjust if your React build folder is elsewhere
   app.use(express.static(buildPath));
 
-  // ✅ Catch-all route for React SPA
+  // Catch-all route for React SPA
   app.get('/*', (_req, res) => {
     res.sendFile(path.join(buildPath, 'index.html'));
   });
@@ -110,5 +114,4 @@ if (process.env.NODE_ENV === 'production') {
 // -------------------
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`CORS allowed origins: ${allowedOrigins.join(', ')}`);
 });
