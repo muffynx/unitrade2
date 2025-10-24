@@ -29,7 +29,7 @@ export default function Dashboard() {
   const [reports, setReports] = useState<Report[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const token = localStorage.getItem("adminToken");
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  const API_URL = import.meta.env.VITE_API_URL || "https://unitrade-blue.vercel.app:3000";
 
   const fetchUsers = async () => {
     if (!token) return;

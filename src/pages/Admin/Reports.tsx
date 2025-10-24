@@ -88,7 +88,7 @@ export default function Reports() {
   const [loadingTarget, setLoadingTarget] = useState(false);
 
   const token = localStorage.getItem("adminToken");
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  const API_URL = import.meta.env.VITE_API_URL || "https://unitrade-yrd9.onrender.com";
 
   useEffect(() => {
     fetchReports();
