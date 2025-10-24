@@ -1,9 +1,9 @@
-import express from 'express';
+// routes/product.ts
+import express, { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import Product from '../models/Product';
 import User from '../models/User';
 import dotenv from 'dotenv';
-import { Request, Response, NextFunction } from 'express';
 import { cloudinary } from '../config/cloudinary';
 import multer from 'multer';
 import { UploadApiResponse } from 'cloudinary';
@@ -12,11 +12,13 @@ dotenv.config();
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
+// AuthRequest interface รองรับ multer files ทั้งแบบ array และ object
 interface AuthRequest extends Request {
   user?: any;
-  files?: Express.Multer.File[];
+  files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] };
 }
 
+// Auth middleware
 const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'No token provided' });
@@ -33,7 +35,7 @@ const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunctio
   }
 };
 
-// ✅ GET ALL PRODUCTS - UPDATED WITH profileImage
+// ---------------------------- GET ALL PRODUCTS ----------------------------
 router.get('/', async (req: Request, res: Response) => {
   try {
     const userId = req.query.userId as string | undefined;
@@ -50,7 +52,7 @@ router.get('/', async (req: Request, res: Response) => {
     if (userId && userId === 'current') {
       const token = req.header('Authorization')?.replace('Bearer ', '');
       if (!token) return res.status(401).json({ message: 'No token provided' });
-      
+
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string };
         query.user = decoded.id;
@@ -58,11 +60,8 @@ router.get('/', async (req: Request, res: Response) => {
         return res.status(401).json({ message: 'Invalid token' });
       }
 
-      if (soldParam === 'true') {
-        query.sold = true;
-      } else if (soldParam === 'false') {
-        query.sold = false;
-      }
+      if (soldParam === 'true') query.sold = true;
+      else if (soldParam === 'false') query.sold = false;
     } else if (userId) {
       query.user = userId;
       if (soldParam === 'true') query.sold = true;
@@ -92,7 +91,6 @@ router.get('/', async (req: Request, res: Response) => {
       ];
     }
 
-    // ✅ UPDATED: populate with profileImage instead of avatar
     const products = await Product.find(query)
       .populate('user', 'name profileImage email studentId')
       .sort({ createdAt: -1 });
@@ -103,13 +101,14 @@ router.get('/', async (req: Request, res: Response) => {
     res.status(500).json({ message: err.message || 'Server error' });
   }
 });
+
+// ---------------------------- COUNT ----------------------------
 router.get('/count', async (_req: Request, res: Response) => {
   try {
     const totalCount = await Product.countDocuments();
     const availableCount = await Product.countDocuments({ sold: false });
     const soldCount = await Product.countDocuments({ sold: true });
 
-    // คืนค่า `count` เพื่อให้ frontend ที่คาด { count } ใช้งานได้
     res.json({
       count: totalCount,
       available: availableCount,
@@ -121,6 +120,7 @@ router.get('/count', async (_req: Request, res: Response) => {
   }
 });
 
+// ---------------------------- LOCATIONS ----------------------------
 router.get('/locations', async (_req: Request, res: Response) => {
   try {
     const locations = await Product.distinct('location', { 
@@ -138,7 +138,7 @@ router.get('/locations', async (_req: Request, res: Response) => {
   }
 });
 
-// ✅ GET PRODUCT BY ID - UPDATED WITH profileImage
+// ---------------------------- GET PRODUCT BY ID ----------------------------
 router.get('/:id', async (req: Request, res: Response) => {
   try {
     const product = await Product.findById(req.params.id)
@@ -151,54 +151,10 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// View Count
-const viewedMessages = new Map<string, number>();
-
-const hasViewed = (key: string): boolean => {
-  const timestamp = viewedMessages.get(key);
-  if (!timestamp) return false;
-  const thirtyMinutes = 30 * 60 * 1000;
-  return Date.now() - timestamp < thirtyMinutes;
-};
-
-
-const markAsViewed = (key: string): void => {
-  viewedMessages.set(key, Date.now());
-  if (viewedMessages.size > 10000) {
-    const oneHourAgo = Date.now() - (60 * 60 * 1000);
-    for (const [k, timestamp] of viewedMessages.entries()) {
-      if (timestamp < oneHourAgo) viewedMessages.delete(k);
-    }
-  }
-};
-
-router.post('/:id/view', async (req: Request, res: Response) => {
-  try {
-    const productId = req.params.id;
-    const userKey = req.ip || 'unknown_ip';
-    const uniqueKey = `${userKey}_${productId}`;
-
-    if (hasViewed(uniqueKey)) {
-      return res.status(200).json({ message: 'Already viewed recently (no increment)' });
-    }
-
-    const product = await Product.findById(productId);
-    if (!product) return res.status(404).json({ message: 'Product not found' });
-
-    product.views = (product.views || 0) + 1;
-    await product.save();
-    markAsViewed(uniqueKey);
-    res.status(200).json({ message: 'View incremented' });
-  } catch (err: any) {
-    console.error('Increment view error:', err);
-    res.status(500).json({ message: err.message || 'Server error' });
-  }
-});
-
-// Create Product
+// ---------------------------- CREATE PRODUCT ----------------------------
 router.post('/create', authMiddleware, upload.array('images', 10), async (req: AuthRequest, res: Response) => {
+  const files = req.files as Express.Multer.File[]; // ✅ cast
   const { title, price, category, description, condition, location } = req.body;
-  const files = req.files;
 
   if (!title || !price || !category || !description || !condition || !location) {
     return res.status(400).json({ message: 'All fields are required' });
@@ -218,13 +174,8 @@ router.post('/create', authMiddleware, upload.array('images', 10), async (req: A
         }
         const result: UploadApiResponse = await cloudinary.uploader.upload(
           `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
-          {
-            folder: 'products',
-            resource_type: 'image',
-            transformation: [{ width: 800, height: 800, crop: 'limit', quality: 'auto:good' }]
-          }
+          { folder: 'products', resource_type: 'image' }
         );
-        if (!result.secure_url) throw new Error(`Failed to upload image ${file.originalname}`);
         imageUrls.push(result.secure_url);
       }
     }
@@ -237,8 +188,8 @@ router.post('/create', authMiddleware, upload.array('images', 10), async (req: A
       condition,
       location,
       images: imageUrls,
-      user: req.user._id,
-      sellerId: req.user._id,
+      user: req.user!._id,
+      sellerId: req.user!._id,
       views: 0,
       favorites: [],
       sold: false
@@ -252,73 +203,52 @@ router.post('/create', authMiddleware, upload.array('images', 10), async (req: A
   }
 });
 
-// Update Product (PUT)
+// ---------------------------- UPDATE PRODUCT ----------------------------
 router.put('/:id', authMiddleware, upload.array('images', 10), async (req: AuthRequest, res: Response) => {
+  const files = req.files as Express.Multer.File[]; // ✅ cast
   const { title, price, category, description, condition, location, existingImages, imagesToDelete, sold } = req.body;
-  const files = req.files;
 
   if (!title || !price || !category || !description || !condition || !location) {
     return res.status(400).json({ message: 'All fields are required' });
   }
-  
+
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
-    if (product.user.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Unauthorized to update this product' });
-    }
+    if (product.user.toString() !== req.user!._id.toString()) return res.status(403).json({ message: 'Unauthorized' });
 
     const parsedPrice = parseFloat(price);
-    if (isNaN(parsedPrice) || parsedPrice < 0) {
-      return res.status(400).json({ message: 'Invalid price' });
-    }
+    if (isNaN(parsedPrice) || parsedPrice < 0) return res.status(400).json({ message: 'Invalid price' });
 
-    if (sold !== undefined) {
-      product.sold = sold === 'true';
-    }
+    if (sold !== undefined) product.sold = sold === 'true';
 
     let updatedImages = JSON.parse(existingImages || '[]') as string[];
     let imagesToDeleteArray: string[] = [];
-    try {
-      imagesToDeleteArray = JSON.parse(imagesToDelete || '[]') as string[];
-    } catch (err) {
-      return res.status(400).json({ message: 'Invalid imagesToDelete format' });
+    try { imagesToDeleteArray = JSON.parse(imagesToDelete || '[]'); } catch {}
+    
+    // Delete images from cloudinary
+    for (const img of imagesToDeleteArray) {
+      try {
+        const parts = img.split('/');
+        const index = parts.findIndex(p => p === 'products') + 1;
+        const publicId = parts.slice(index).join('/').split('.')[0];
+        await cloudinary.uploader.destroy(`products/${publicId}`, { invalidate: true });
+        updatedImages = updatedImages.filter(u => u !== img);
+      } catch (err) { console.error('Error deleting image:', err); }
     }
 
-    if (imagesToDeleteArray.length > 0) {
-      for (const imageUrl of imagesToDeleteArray) {
-        try {
-          const urlParts = imageUrl.split('/');
-          const index = urlParts.findIndex(part => part === 'products') + 1;
-          const publicId = urlParts.slice(index).join('/').split('.')[0];
-          const fullPublicId = `products/${publicId}`;
-          await cloudinary.uploader.destroy(fullPublicId, { invalidate: true });
-        } catch (err: any) {
-          console.error('Error deleting image:', imageUrl, err.message);
-        }
-      }
-    }
-
+    // Upload new files
     if (files && files.length > 0) {
       for (const file of files) {
-        if (file.size > 10 * 1024 * 1024) {
-          return res.status(400).json({ message: `Image ${file.originalname} exceeds 10MB` });
-        }
         const result: UploadApiResponse = await cloudinary.uploader.upload(
           `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
-          {
-            folder: 'products',
-            resource_type: 'image',
-            transformation: [{ width: 800, height: 800, crop: 'limit', quality: 'auto:good' }]
-          }
+          { folder: 'products', resource_type: 'image' }
         );
         updatedImages.push(result.secure_url);
       }
     }
 
-    if (updatedImages.length > 10) {
-      return res.status(400).json({ message: 'Maximum 10 images allowed' });
-    }
+    if (updatedImages.length > 10) return res.status(400).json({ message: 'Maximum 10 images allowed' });
 
     product.title = title;
     product.price = parsedPrice;
@@ -336,54 +266,41 @@ router.put('/:id', authMiddleware, upload.array('images', 10), async (req: AuthR
   }
 });
 
-// Mark as Sold (PATCH)
+// ---------------------------- MARK AS SOLD ----------------------------
 router.patch('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { sold } = req.body;
-
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
-    if (product.user.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Unauthorized to update this product' });
-    }
-    if (!product.sellerId) { // ✅ เพิ่มการตรวจสอบและตั้งค่า sellerId
-    product.sellerId = req.user._id;
-  }
+    if (product.user.toString() !== req.user!._id.toString()) return res.status(403).json({ message: 'Unauthorized' });
 
+    if (!product.sellerId) product.sellerId = req.user!._id;
     product.sold = sold === true || sold === 'true';
     await product.save();
-    
-    console.log(`Product ${req.params.id} marked as sold: ${product.sold}`);
-    res.status(200).json({ 
-      message: `Product ${product.sold ? 'marked as sold' : 'marked as available'} successfully`, 
-      product 
-    });
+
+    res.status(200).json({ message: `Product ${product.sold ? 'marked as sold' : 'marked as available'} successfully`, product });
   } catch (err: any) {
     console.error('Mark as sold error:', err);
     res.status(500).json({ message: err.message || 'Server error' });
   }
 });
 
-// Delete Product
+// ---------------------------- DELETE PRODUCT ----------------------------
 router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
-    if (product.user.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Unauthorized to delete this product' });
-    }
+    if (product.user.toString() !== req.user!._id.toString()) return res.status(403).json({ message: 'Unauthorized' });
 
+    // Delete images from cloudinary
     if (product.images && product.images.length > 0) {
-      for (const imageUrl of product.images) {
+      for (const img of product.images) {
         try {
-          const urlParts = imageUrl.split('/');
-          const index = urlParts.findIndex(part => part === 'products') + 1;
-          const publicId = urlParts.slice(index).join('/').split('.')[0];
-          const fullPublicId = `products/${publicId}`;
-          await cloudinary.uploader.destroy(fullPublicId, { invalidate: true });
-        } catch (err: any) {
-          console.error('Error deleting image:', imageUrl, err.message);
-        }
+          const parts = img.split('/');
+          const index = parts.findIndex(p => p === 'products') + 1;
+          const publicId = parts.slice(index).join('/').split('.')[0];
+          await cloudinary.uploader.destroy(`products/${publicId}`, { invalidate: true });
+        } catch (err) { console.error('Error deleting image:', err); }
       }
     }
 
