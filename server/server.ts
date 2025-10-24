@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -26,47 +26,45 @@ const PORT = Number(process.env.PORT) || 3000;
 // ✅ CORS Setup
 // -------------------
 const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? [
-    'https://unitrade-blue.vercel.app', // Production Main URL
-    'https://unitrade-yrd9.onrender.com', // Internal Render URL
-  ]
-  : [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'https://unitrade-yrd9.onrender.com',
-  ];
+  ? [
+    'https://unitrade-blue.vercel.app', // Production Main URL
+    'https://unitrade-yrd9.onrender.com', // Internal Render URL
+  ]
+  : [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://unitrade-yrd9.onrender.com',
+  ];
 
 app.use(cors({
-  origin: (origin, callback) => {
-    // Postman or server-to-server requests
-    if (!origin) return callback(null, true);
+  origin: (origin, callback) => {
+    // Postman or server-to-server requests
+    if (!origin) return callback(null, true);
 
-    const normalizedOrigin = origin.toLowerCase().replace(/\/$/, ''); // remove trailing slash
+    const normalizedOrigin = origin.toLowerCase().replace(/\/$/, ''); // remove trailing slash
 
-    // ➡️ DEBUG LOG: แสดงค่าที่ Server เห็น
-    console.log(`CORS DEBUG: Origin=${normalizedOrigin}, NODE_ENV=${process.env.NODE_ENV}`);
+    // ➡️ DEBUG LOG: แสดงค่าที่ Server เห็น
+    console.log(`CORS DEBUG: Origin=${normalizedOrigin}, NODE_ENV=${process.env.NODE_ENV}`);
 
-    // 1️⃣ Check direct allowed origins
-    if (allowedOrigins.includes(normalizedOrigin)) {
-      console.log('CORS DEBUG: Matched allowedOrigins list.');
-      return callback(null, true);
-    }
+    // 1️⃣ Check direct allowed origins
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      console.log('CORS DEBUG: Matched allowedOrigins list.');
+      return callback(null, true);
+    }
 
-    // 2️⃣ Dynamic Vercel Preview check (production only)
-    const vercelPreviewPattern = /^https:\/\/[a-z0-9-]+-muffynxs-projects\.vercel\.app$/;
-    const isVercelPreview = normalizedOrigin.match(vercelPreviewPattern);
+    // 2️⃣ Dynamic Vercel Preview check (production only)
+    // อนุญาตทุกโดเมนย่อยที่ลงท้ายด้วย .vercel.app
+    if (process.env.NODE_ENV === 'production' && normalizedOrigin.endsWith('.vercel.app')) {
+      console.log('CORS DEBUG: Matched Vercel Dynamic Preview.');
+      return callback(null, true);
+    }
 
-    if (process.env.NODE_ENV === 'production' && isVercelPreview) {
-      console.log('CORS DEBUG: Matched Vercel Dynamic Preview.');
-      return callback(null, true);
-    }
-
-    // 3️⃣ Block if not allowed
-    // ➡️ DEBUG LOG: แสดงสถานะการบล็อกอย่างชัดเจน
-    console.error(`CORS DEBUG: Blocked! Vercel check result: ${isVercelPreview ? 'True' : 'False'}.`);
-    return callback(new Error(`CORS blocked for origin: ${origin}. Current NODE_ENV: ${process.env.NODE_ENV}.`));
-  },
-  credentials: true,
+    // 3️⃣ Block if not allowed
+    // ➡️ DEBUG LOG: แสดงสถานะการบล็อกอย่างชัดเจน
+    console.error(`CORS DEBUG: Blocked!`);
+    return callback(new Error(`CORS blocked for origin: ${origin}. Current NODE_ENV: ${process.env.NODE_ENV}.`));
+  },
+  credentials: true,
 }));
 
 // -------------------
@@ -78,13 +76,13 @@ app.use(express.json());
 // MongoDB Connection
 // -------------------
 if (!process.env.MONGODB_URI) {
-  throw new Error('❌ MONGODB_URI is not defined');
+  throw new Error('❌ MONGODB_URI is not defined');
 }
 
 mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ Connected to MongoDB'))
-  .catch((err) => console.error('❌ MongoDB connection error:', err));
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log('✅ Connected to MongoDB'))
+  .catch((err) => console.error('❌ MongoDB connection error:', err));
 
 // -------------------
 // API Routes
@@ -107,22 +105,41 @@ app.use('/api/admin', adminRoutes);
 // Serve React SPA (for production)
 // -------------------
 if (process.env.NODE_ENV === 'production') {
-  const buildPath = path.join(__dirname, '../client/dist');
-  app.use(express.static(buildPath));
+  const buildPath = path.join(__dirname, '../client/dist');
+  app.use(express.static(buildPath));
 
-  app.get('/*', (_req, res) => {
-    res.sendFile(path.join(buildPath, 'index.html'));
-  });
+  app.get('/*', (_req, res) => {
+    res.sendFile(path.join(buildPath, 'index.html'));
+  });
 } else {
-  app.get('/', (_req, res) => {
-    res.send('<h1>✅ UniTrade API is running successfully</h1>');
-  });
+  app.get('/', (_req, res) => {
+    res.send('<h1>✅ UniTrade API is running successfully</h1>');
+  });
 }
+
+// -------------------
+// ⚠️ GLOBAL ERROR HANDLER MIDDLEWARE (Must be defined last)
+// ดักจับ error ที่เกิดขึ้นใน route handler ทั้งหมด
+// -------------------
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    // ➡️ Log error เต็มรูปแบบเพื่อวิเคราะห์สาเหตุ 500
+    console.error('❌ GLOBAL SERVER ERROR:', err.stack); 
+
+    // ตอบกลับด้วย 500 และ Body ที่ระบุ error ในโหมด Dev เท่านั้น
+    const statusCode = err.statusCode || 500;
+    res.status(statusCode).json({
+        success: false,
+        message: err.message || 'Internal Server Error',
+        // ส่ง stack trace กลับไปในโหมด Dev เท่านั้นเพื่อความปลอดภัย
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined, 
+    });
+});
+
 
 // -------------------
 // Start Server
 // -------------------
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`CORS allowed origins: ${allowedOrigins.join(', ')} (Dynamic Vercel previews also allowed in production)`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`CORS allowed origins: ${allowedOrigins.join(', ')} (Dynamic Vercel previews also allowed in production)`);
 });
