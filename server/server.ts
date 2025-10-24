@@ -27,14 +27,14 @@ const PORT = Number(process.env.PORT) || 3000;
 // -------------------
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
-      'https://unitrade-blue.vercel.app',
-      'https://www.unitrade-blue.vercel.app',
-    ]
+    'https://unitrade-blue.vercel.app',
+    'https://www.unitrade-blue.vercel.app',
+  ]
   : [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'https://unitrade-yrd9.onrender.com',
-    ];
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://unitrade-yrd9.onrender.com',
+  ];
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -45,11 +45,8 @@ app.use(cors({
   credentials: true,
 }));
 
-// Preflight OPTIONS request
-app.options('*', cors({
-  origin: allowedOrigins,
-  credentials: true,
-}));
+// ❌ Removed the problematic app.options('*', ...) block.
+// The app.use(cors({...})) above is sufficient to handle preflight OPTIONS requests for all routes.
 
 // -------------------
 // Middleware
