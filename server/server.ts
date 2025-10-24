@@ -28,7 +28,7 @@ app.set('trust proxy', true);
 app.use(cors({ 
     // กำหนด Origin ที่อนุญาต
     origin: [
-      'https://unitrade-blue.vercel.app', // Production Frontend URL (ไม่มี / ปิดท้าย)
+      'https://unitrade-rho.vercel.app/', // Production Frontend URL (ไม่มี / ปิดท้าย)
       'http://localhost:5173',           // Local Development
       'http://localhost:5174', 
       'http://localhost:5175',
