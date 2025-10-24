@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 
 // Routes
 import authRoutes from './routes/auth';
@@ -37,12 +38,9 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // Allow server-to-server or Postman
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error(`CORS blocked for origin: ${origin}`));
-    }
+    if (!origin) return callback(null, true); // Postman or server-to-server
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
   },
   credentials: true,
 }));
@@ -71,7 +69,7 @@ mongoose
   .catch((err) => console.error('❌ MongoDB connection error:', err));
 
 // -------------------
-// Routes
+// API Routes
 // -------------------
 app.use('/api/auth', authRoutes);
 app.use('/api/product', productRoutes);
@@ -87,10 +85,23 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Root route
-app.get('/', (_req, res) => {
-  res.send('<h1>✅ UniTrade API is running successfully</h1>');
-});
+// -------------------
+// Serve React SPA (for production)
+// -------------------
+if (process.env.NODE_ENV === 'production') {
+  const buildPath = path.join(__dirname, '../client/dist'); // adjust if your React build folder is elsewhere
+  app.use(express.static(buildPath));
+
+  // ✅ Catch-all route for React SPA
+  app.get('/*', (_req, res) => {
+    res.sendFile(path.join(buildPath, 'index.html'));
+  });
+} else {
+  // Root route for dev
+  app.get('/', (_req, res) => {
+    res.send('<h1>✅ UniTrade API is running successfully</h1>');
+  });
+}
 
 // -------------------
 // Start Server
