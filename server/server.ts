@@ -33,7 +33,7 @@ app.use(
             'https://unitrade-blue.vercel.app',
             'https://www.unitrade-blue.vercel.app',
           ]
-        : ['http://localhost:5173', 'http://localhost:3000'],
+        : ['http://localhost:5173', 'http://localhost:3000','https://unitrade-yrd9.onrender.com','https://www.unitrade-blue.vercel.app'],
     credentials: true,
   })
 );
