@@ -1,4 +1,3 @@
-// server/server.ts
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
@@ -21,28 +20,34 @@ dotenv.config();
 
 const app = express();
 
-// ✅ Convert PORT to number (important for TypeScript)
+// ✅ Convert PORT to number
 const PORT = Number(process.env.PORT) || 3000;
 
-// Middleware
+// ✅ CORS setup
+const allowedOrigins =
+  process.env.NODE_ENV === 'production'
+    ? [
+        'https://unitrade-blue.vercel.app',
+        'https://www.unitrade-blue.vercel.app',
+      ]
+    : [
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'https://unitrade-yrd9.onrender.com',
+      ];
+
 app.use(
   cors({
-    origin:
-      process.env.NODE_ENV === 'production'
-        ? [
-            'https://unitrade-blue.vercel.app',
-            'https://www.unitrade-blue.vercel.app',
-          ]
-        : ['http://localhost:5173', 'http://localhost:3000','https://unitrade-yrd9.onrender.com','https://www.unitrade-blue.vercel.app'],
+    origin: allowedOrigins,
     credentials: true,
   })
 );
 
 app.use(express.json());
 
-// MongoDB Connection
+// MongoDB connection
 if (!process.env.MONGODB_URI) {
-  throw new Error('❌ MONGODB_URI is not defined in environment variables');
+  throw new Error('❌ MONGODB_URI is not defined');
 }
 
 mongoose
@@ -65,12 +70,12 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Root Route
+// Root route
 app.get('/', (_req, res) => {
-  res.send('<h1>✅ UniTrade API is running successfully on Render</h1>');
+  res.send('<h1>✅ UniTrade API is running successfully</h1>');
 });
 
-// ✅ Proper listen for Render
+// Listen
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
