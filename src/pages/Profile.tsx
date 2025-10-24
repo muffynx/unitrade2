@@ -96,7 +96,7 @@ const fetchSoldListings = async () => {
     setError(null);
     const token = localStorage.getItem('token');
     if (!token) throw new Error('ไม่พบ token');
-    const API_URL = import.meta.env.VITE_API_URL || 'http://https://unitrade-yrd9.onrender.com';
+    const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade-yrd9.onrender.com';
 
 
 
