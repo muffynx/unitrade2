@@ -1,17 +1,19 @@
 {
   "name": "project-unitrade",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "server": "nodemon server/index.ts",
+    "start": "node dist/server/index.js"
   },
   "dependencies": {
     "@react-oauth/google": "^0.12.2",
-    "bcrypt": "^6.0.0",
+    "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
@@ -19,6 +21,7 @@
     "dayjs": "^1.11.18",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "firebase": "^12.4.0",
     "i18next": "^25.6.0",
     "i18next-browser-languagedetector": "^8.2.0",
     "i18next-http-backend": "^3.0.2",
@@ -30,8 +33,11 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-i18next": "^16.0.1",
+    "react-icons": "^5.5.0",
     "react-responsive": "^10.0.1",
-    "react-toastify": "^11.0.5"
+    "react-router-dom": "^7.9.4",
+    "react-toastify": "^11.0.5",
+    "yup": "^1.7.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",
@@ -42,43 +48,41 @@
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/mongoose": "^5.11.96",
+    "@types/node": "^22.9.0",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",
     "autoprefixer": "^10.4.21",
-    "axios": "^1.12.2",
     "eslint": "^9.30.1",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
-    "firebase": "^12.4.0",
-    "formik": "^2.4.6",
     "globals": "^16.3.0",
-    "init": "^0.1.2",
-    "install": "^0.13.0",
     "nodemon": "^3.1.10",
-    "npm": "^11.6.0",
-    "npx": "^10.2.2",
     "postcss": "^8.5.6",
-    "react-icons": "^5.5.0",
-    "react-router-dom": "^7.9.4",
     "tailwindcss": "^4.1.16",
     "ts-node": "^10.9.2",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",
-    "vite": "^7.0.4",
-    "yup": "^1.7.1"
+    "vite": "^7.0.4"
   },
-  "description": "ติดตั้ง packages ที่จำเป็น (Frontend) npm install npm install react-router-dom axios formik yup react-icons tailwindcss @headlessui/react npm install firebase npm install -D tailwindcss postcss autoprefixer npx tailwindcss init -p",
-  "main": "eslint.config.js",
+  "description": "Full-stack React + Express + MongoDB + Tailwind + i18n project",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/witchaphon112/project-unitrade.git"
+    "url": "https://github.com/witchaphon112/project-unitrade.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "react",
+    "vite",
+    "express",
+    "typescript",
+    "mongodb",
+    "fullstack",
+    "unitrade"
+  ],
+  "author": "Witchaphon112",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/witchaphon112/project-unitrade/issues"
   },
-  "homepage": "https://github.com/witchaphon112/project-unitrade#readme"
+  "homepage": "https://unitrade-blue.vercel.app"
 }
