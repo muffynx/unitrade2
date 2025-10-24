@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState } from 'react';
+import { useState } from "react";
 import {
   FaSignOutAlt,
   FaUserShield,
@@ -22,7 +22,16 @@ interface AdminLayoutProps {
 const adminNavigation = [
   { path: "/admin", icon: FaChartLine, label: "Dashboard" },
   { path: "/admin/users", icon: FaUsers, label: "Users Management" },
-  { path: "/admin/products", icon: FaShoppingCart, label: "Products Management" },
+  {
+    path: "/admin/products",
+    icon: FaShoppingCart,
+    label: "Products Management",
+  },
+  {
+    path: "/admin/MessagesAdmin",
+    icon: FaEnvelope,
+    label: "Messages Management",
+  },
   { path: "/admin/messages", icon: FaEnvelope, label: "Chat Messages" },
   { path: "/admin/reports", icon: FaFileAlt, label: "Reports Center" },
 ];
@@ -34,7 +43,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const handleLogout = () => {
     // ลบ token ทั้งหมด หรือเฉพาะ adminToken
-    localStorage.removeItem("token"); 
+    localStorage.removeItem("token");
     localStorage.removeItem("adminToken");
     navigate("/login");
   };
@@ -46,22 +55,21 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   // ฟังก์ชันหาชื่อหน้าปัจจุบัน
   const getPageTitle = (pathname: string): string => {
-    const activeItem = adminNavigation.find(item => item.path === pathname);
-    
+    const activeItem = adminNavigation.find((item) => item.path === pathname);
+
     if (activeItem) {
-        return activeItem.label;
+      return activeItem.label;
     }
-    
+
     // Fallback สำหรับหน้าย่อย หรือหน้าหลัก
     if (pathname.startsWith("/admin/users/")) return "User Details";
     if (pathname.startsWith("/admin/products/")) return "Product Details";
 
     return "Admin Panel";
   };
-    
+
   return (
     <div className="flex h-screen bg-gray-100">
-      
       {/* 1. Mobile Overlay & Sidebar Toggle */}
       {isSidebarOpen && (
         <div
@@ -71,10 +79,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       )}
 
       {/* 2. Sidebar (Fixed on Desktop, Toggleable on Mobile) */}
-      <aside 
+      <aside
         className={`fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 flex flex-col z-30 
         transition-transform duration-300 md:translate-x-0 
-        ${isSidebarOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full'}`}
+        ${isSidebarOpen ? "translate-x-0 shadow-xl" : "-translate-x-full"}`}
       >
         <div className="p-6 text-2xl font-bold text-gray-900 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -88,12 +96,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <FaTimes className="h-5 w-5" />
           </button>
         </div>
-        
+
         <nav className="flex-1 overflow-y-auto">
           {adminNavigation.map((item) => (
             <button
               key={item.path}
-              className={`w-full text-left px-6 py-3 flex items-center gap-3 transition ${getActive(item.path)}`}
+              className={`w-full text-left px-6 py-3 flex items-center gap-3 transition ${getActive(
+                item.path
+              )}`}
               onClick={() => {
                 navigate(item.path);
                 setIsSidebarOpen(false);
@@ -113,10 +123,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </aside>
 
       <div className="flex-1 flex flex-col md:ml-64">
-        
         <header className="bg-white border-b border-gray-200 px-4 md:px-6 py-3 flex justify-between items-center sticky top-0 z-10 shadow-sm">
-          
-          <button 
+          <button
             className="md:hidden p-2 mr-3 text-gray-600 hover:bg-gray-100 rounded-lg"
             onClick={() => setIsSidebarOpen(true)}
           >
@@ -128,7 +136,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </h1>
 
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600 hidden sm:inline">Admin Logged In</span>
+            <span className="text-sm text-gray-600 hidden sm:inline">
+              Admin Logged In
+            </span>
             <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
               A
             </div>

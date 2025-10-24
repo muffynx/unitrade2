@@ -1,5 +1,4 @@
 import express, { Request, Response } from "express";
-import jwt from "jsonwebtoken";
 import Report from "../models/Report";
 import auth from "../middleware/auth";
 
@@ -9,7 +8,7 @@ interface AuthRequest extends Request {
   user?: any;
 }
 
-// สร้างรายงานใหม่
+// 🟢 สร้างรายงานใหม่
 router.post("/", auth, async (req: AuthRequest, res: Response) => {
   try {
     const { type, targetId, reason, description } = req.body;
@@ -19,13 +18,8 @@ router.post("/", auth, async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ message: "ต้องระบุ type, targetId และ reason" });
     }
 
-    // ตรวจสอบว่าไม่รายงานตัวเอง
-    const existingReport = await Report.findOne({
-      userId,
-      type,
-      targetId
-    });
-
+    // ตรวจสอบว่ารายงานนี้มีอยู่แล้ว
+    const existingReport = await Report.findOne({ userId, type, targetId });
     if (existingReport) {
       return res.status(400).json({ message: "คุณได้รายงานรายการนี้ไปแล้ว" });
     }
@@ -35,15 +29,15 @@ router.post("/", auth, async (req: AuthRequest, res: Response) => {
       type: type.toUpperCase(),
       targetId,
       reason,
-      description: description || `รายงาน${type === 'PRODUCT' ? 'สินค้า' : 'ข้อความ'}ที่ไม่เหมาะสม`,
-      status: 'pending'
+      description: description || `รายงาน${type === "PRODUCT" ? "สินค้า" : "ข้อความ"}ที่ไม่เหมาะสม`,
+      status: "pending",
     });
 
     await report.save();
 
-    res.status(201).json({ 
-      message: "ส่งรายงานเรียบร้อยแล้ว", 
-      report 
+    res.status(201).json({
+      message: "ส่งรายงานเรียบร้อยแล้ว",
+      report,
     });
   } catch (error: any) {
     console.error("Create report error:", error);
@@ -51,9 +45,14 @@ router.post("/", auth, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// ดึงรายงานทั้งหมด (สำหรับ admin)
-router.get("/", async (req: Request, res: Response) => {
+// 🟡 ดึงรายงานทั้งหมด (สำหรับ admin)
+router.get("/", auth, async (req: AuthRequest, res: Response) => {
   try {
+    // ตรวจสอบสิทธิ์ผู้ใช้
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "ไม่มีสิทธิ์เข้าถึงข้อมูลนี้" });
+    }
+
     const reports = await Report.find()
       .populate("userId", "name email")
       .sort({ createdAt: -1 });
@@ -65,19 +64,23 @@ router.get("/", async (req: Request, res: Response) => {
   }
 });
 
-// อัพเดทสถานะรายงาน (สำหรับ admin)
-router.patch("/:id/status", async (req: Request, res: Response) => {
+// 🔵 อัพเดทสถานะรายงาน (สำหรับ admin)
+router.patch("/:id/status", auth, async (req: AuthRequest, res: Response) => {
   try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "ไม่มีสิทธิ์แก้ไขรายงาน" });
+    }
+
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!['pending', 'reviewed', 'resolved', 'dismissed'].includes(status)) {
+    if (!["pending", "reviewed", "resolved", "dismissed"].includes(status)) {
       return res.status(400).json({ message: "สถานะไม่ถูกต้อง" });
     }
 
     const report = await Report.findByIdAndUpdate(
       id,
-      { status, reviewedAt: new Date() },
+      { status, reviewedAt: new Date(), reviewedBy: req.user._id },
       { new: true }
     ).populate("userId", "name email");
 
@@ -93,5 +96,3 @@ router.patch("/:id/status", async (req: Request, res: Response) => {
 });
 
 export default router;
-
-

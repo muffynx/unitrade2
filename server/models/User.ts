@@ -6,16 +6,15 @@ export interface IUser extends Document {
   email: string;
   studentId: string;
   password: string;
+  username: string;
+  phone?: string;
+  university?: string;
   role?: string;
   googleId?: string;
   profileImage?: string;
   isEmailVerified?: boolean;
-  status?: string;
-  lastLogin?: Date;
-  // ✅ เพิ่ม OTP fields
-  otp?: string;
-  otpExpiry?: Date;
-  otpAttempts?: number;
+  status: string;
+  lastLogin?: Date; // Add this line
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -25,16 +24,14 @@ const userSchema = new Schema<IUser>({
   name: {
     type: String,
     required: true,
-    trim: true,
-    maxlength: 100
+    trim: true
   },
   email: {
     type: String,
     required: true,
     unique: true,
     lowercase: true,
-    trim: true,
-    match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    trim: true
   },
   studentId: {
     type: String,
@@ -44,8 +41,21 @@ const userSchema = new Schema<IUser>({
   },
   password: {
     type: String,
+    required: true
+  },
+  username: {
+    type: String,
     required: true,
-    minlength: 8
+    unique: true,
+    trim: true
+  },
+  phone: {
+    type: String,
+    default: ''
+  },
+  university: {
+    type: String,
+    default: ''
   },
   role: {
     type: String,
@@ -67,33 +77,22 @@ const userSchema = new Schema<IUser>({
   },
   status: {
     type: String,
-    enum: ['active', 'suspended', 'deleted', 'pending'], // เพิ่ม 'pending'
-    default: 'pending' // เปลี่ยนเป็น pending จนกว่าจะ verify
+    default: "active"
   },
-  lastLogin: {
-    type: Date
-  },
-  // ✅ OTP fields
-  otp: {
-    type: String
-  },
-  otpExpiry: {
-    type: Date
-  },
-  otpAttempts: {
-    type: Number,
-    default: 0
+  lastLogin: {  // Add this field
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true
 });
 
-// Hash password ก่อน save
+// Hash password before save
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   
   try {
-    const salt = await bcrypt.genSalt(12);
+    const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (error: any) {
@@ -101,7 +100,7 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-// Method สำหรับเปรียบเทียบ password
+// Method to compare passwords
 userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
   try {
     return await bcrypt.compare(candidatePassword, this.password);
@@ -110,11 +109,9 @@ userSchema.methods.comparePassword = async function(candidatePassword: string): 
   }
 };
 
-// Index
+// Indexes for searching
 userSchema.index({ email: 1 });
 userSchema.index({ studentId: 1 });
 userSchema.index({ googleId: 1 });
-userSchema.index({ status: 1 });
-userSchema.index({ otpExpiry: 1 }); // ✅ เพิ่ม index สำหรับ OTP
 
 export default mongoose.model<IUser>('User', userSchema);

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { Send, ArrowLeft, User, Image, MoreVertical, Paperclip, Plus, Flag, ExternalLink, MapPin, CheckCircle, AlertCircle, Bell, X, Star } from 'lucide-react';
+import { Send, ArrowLeft, User, Image, MoreVertical, Paperclip, Plus, Flag, ExternalLink, MapPin, CheckCircle, AlertCircle, Bell, X, Star, Menu } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { th } from 'date-fns/locale';
 
@@ -89,9 +89,7 @@ const Chat = () => {
   const navigate = useNavigate();
   const { conversationId: urlConversationId } = useParams<{ conversationId: string }>();
 
-
   const [submittingReview, setSubmittingReview] = useState(false);
-
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Chat[]>([]);
@@ -112,6 +110,7 @@ const Chat = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true); // Mobile sidebar toggle
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -122,7 +121,7 @@ const Chat = () => {
   const messageId = searchParams.get('messageId');
   const receiverId = searchParams.get('receiverId');
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://unitrade-yrd9.onrender.com';
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   // Auto-select conversation from URL parameter
   useEffect(() => {
@@ -132,6 +131,10 @@ const Chat = () => {
         console.log('🔄 Selecting conversation from URL:', conversation._id);
         setSelectedConversation(conversation);
         fetchMessages(conversation._id);
+        // Hide sidebar on mobile when conversation is selected
+        if (window.innerWidth < 768) {
+          setShowSidebar(false);
+        }
       }
     }
   }, [urlConversationId, conversations]);
@@ -146,6 +149,10 @@ const Chat = () => {
     fetchMessages(conversation._id);
     setShowMoreMenu(false);
     setShowAttachMenu(false);
+    // Hide sidebar on mobile
+    if (window.innerWidth < 768) {
+      setShowSidebar(false);
+    }
   };
 
   // Auto scroll to bottom
@@ -161,23 +168,25 @@ const Chat = () => {
       });
     }, 100);
   };
-const fetchConversations = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    const response = await axios.get(`${API_URL}/api/conversations`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const sorted = response.data.sort(sortConversationsByLatest);
-    setConversations(sorted);
-    return sorted; 
-  } catch (err) {
-    console.error('Fetch conversations error:', err);
-    return [];
-  } finally {
-    setLoading(false);
-  }
-};
+
+  const fetchConversations = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      const response = await axios.get(`${API_URL}/api/conversations`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const sorted = response.data.sort(sortConversationsByLatest);
+      setConversations(sorted);
+      return sorted; 
+    } catch (err) {
+      console.error('Fetch conversations error:', err);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Polling for real-time updates
   const startPolling = () => {
     if (refreshIntervalRef.current) {
@@ -262,7 +271,6 @@ const fetchConversations = async () => {
       stopPolling();
     };
   }, []);
-
 
   useEffect(() => {
     if (selectedConversation) {
@@ -380,10 +388,8 @@ const fetchConversations = async () => {
       setMessages(response.data);
       markAsRead(conversationId);
     } catch (err) {
-      
       console.error('Fetch messages error:', err);
       toast.error('ไม่สามารถโหลดข้อความได้');
-      
     }
   };
 
@@ -433,107 +439,83 @@ const fetchConversations = async () => {
   };
 
   // Complete trade
-// ✅ ฟังก์ชันทำเครื่องหมายว่าสินค้าขายแล้ว (พร้อม Debug และ Fix)
-const handleCompleteTrade = async () => {
-  if (!selectedConversation || !selectedConversation.product?._id) {
-    toast.error('ไม่พบข้อมูลการสนทนาหรือสินค้า');
-    return;
-  }
-
-
-  if (String(sellerId) !== String(currentUserId)) {
-    toast.error('เฉพาะผู้ขายเท่านั้นที่สามารถทำเครื่องหมายว่าขายแล้วได้');
-    console.warn("❌ Seller mismatch:", { sellerId, currentUserId });
-    return;
-  }
-
-
-  if (!window.confirm('คุณแน่ใจหรือไม่ว่าต้องการทำเครื่องหมายว่าสินค้านี้ขายแล้ว?')) return;
-
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      toast.error('กรุณาเข้าสู่ระบบ');
-      navigate('/login');
+  const handleCompleteTrade = async () => {
+    if (!selectedConversation || !selectedConversation.product?._id) {
+      toast.error('ไม่พบข้อมูลการสนทนาหรือสินค้า');
       return;
     }
 
-    console.log('🚀 Attempting to complete trade for conversation:', selectedConversation._id);
-
-    const response = await axios.post(
-      `${API_URL}/api/conversations/${selectedConversation._id}/complete-trade`,
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    const updatedConversation: Conversation = response.data.conversation;
-    console.log('✅ Complete trade response:', updatedConversation);
-
-    // ✅ อัปเดตรายการสนทนา
-    setConversations(prev =>
-      prev
-        .map(conv =>
-          conv._id === selectedConversation._id
-? updatedConversation // <-- 💡 ใช้ object ใหม่ที่ได้จาก API ทั้งหมด
-            : conv
-        )
-        .sort(sortConversationsByLatest)
-    );
-
-    // ✅ อัปเดต conversation ที่เลือก
-    setSelectedConversation(prev =>
-      prev
-        ? {
-            ...prev,
-            isCompleted: updatedConversation.isCompleted,
-            completedAt: updatedConversation.completedAt,
-            buyerId: updatedConversation.buyerId,
-            isActive: updatedConversation.isActive,
-            product: {
-              ...prev.product!,
-              sold: true,
-            },
-          }
-        : null
-    );
-
-    // ✅ เพิ่มจำนวน completedTrades ให้ผู้ใช้
-    if (currentUser) {
-      setCurrentUser({
-        ...currentUser,
-        completedTrades: (currentUser.completedTrades || 0) + 1,
-      });
+    if (String(sellerId) !== String(currentUserId)) {
+      toast.error('เฉพาะผู้ขายเท่านั้นที่สามารถทำเครื่องหมายว่าขายแล้วได้');
+      console.warn("❌ Seller mismatch:", { sellerId, currentUserId });
+      return;
     }
 
-    toast.success('✅ การซื้อขายสำเร็จ!');
-    
-  } catch (err: any) {
-    console.error('❌ Complete trade error:', {
-      message: err.message,
-      response: err.response?.data,
-      status: err.response?.status,
-    });
-    toast.error(err.response?.data?.message || 'ไม่สามารถสรุปการซื้อขายได้');
-  }
-};
+    if (!window.confirm('คุณแน่ใจหรือไม่ว่าต้องการทำเครื่องหมายว่าสินค้านี้ขายแล้ว?')) return;
 
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('กรุณาเข้าสู่ระบบ');
+        navigate('/login');
+        return;
+      }
 
+      console.log('🚀 Attempting to complete trade for conversation:', selectedConversation._id);
 
+      const response = await axios.post(
+        `${API_URL}/api/conversations/${selectedConversation._id}/complete-trade`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
+      const updatedConversation: Conversation = response.data.conversation;
+      console.log('✅ Complete trade response:', updatedConversation);
 
+      setConversations(prev =>
+        prev
+          .map(conv =>
+            conv._id === selectedConversation._id
+              ? updatedConversation
+              : conv
+          )
+          .sort(sortConversationsByLatest)
+      );
 
+      setSelectedConversation(prev =>
+        prev
+          ? {
+              ...prev,
+              isCompleted: updatedConversation.isCompleted,
+              completedAt: updatedConversation.completedAt,
+              buyerId: updatedConversation.buyerId,
+              isActive: updatedConversation.isActive,
+              product: {
+                ...prev.product!,
+                sold: true,
+              },
+            }
+          : null
+      );
 
+      if (currentUser) {
+        setCurrentUser({
+          ...currentUser,
+          completedTrades: (currentUser.completedTrades || 0) + 1,
+        });
+      }
 
-
-
-
-
-
-
-
-
-
-
+      toast.success('✅ การซื้อขายสำเร็จ!');
+      
+    } catch (err: any) {
+      console.error('❌ Complete trade error:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
+      toast.error(err.response?.data?.message || 'ไม่สามารถสรุปการซื้อขายได้');
+    }
+  };
 
   // Submit review
   const handleSubmitReview = async () => {
@@ -542,9 +524,9 @@ const handleCompleteTrade = async () => {
       return;
     }
 
-  if (submittingReview) return; 
+    if (submittingReview) return; 
 
-  setSubmittingReview(true); 
+    setSubmittingReview(true); 
 
     try {
       const token = localStorage.getItem('token');
@@ -582,7 +564,7 @@ const handleCompleteTrade = async () => {
       setShowReviewMenu(false);
       setReviewRating(0);
       setReviewComment('');
-      fetchNotifications(); // Refresh notifications
+      fetchNotifications();
     } catch (err: any) {
       console.error('Submit review error:', {
         message: err.message,
@@ -590,6 +572,8 @@ const handleCompleteTrade = async () => {
         status: err.response?.status,
       });
       toast.error(err.response?.data?.message || 'ไม่สามารถส่งรีวิวได้');
+    } finally {
+      setSubmittingReview(false);
     }
   };
 
@@ -673,7 +657,7 @@ const handleCompleteTrade = async () => {
       const attachment = message.attachments[0];
       if (attachment.fileType.startsWith('image/')) {
         return (
-          <div className="max-w-xs">
+          <div className="max-w-[200px] sm:max-w-xs">
             <img 
               src={attachment.url} 
               alt={attachment.filename}
@@ -690,17 +674,17 @@ const handleCompleteTrade = async () => {
       const mapUrl = `https://maps.google.com/?q=${latitude},${longitude}`;
       
       return (
-        <div className="max-w-xs border border-gray-300 rounded-lg overflow-hidden">
+        <div className="max-w-[200px] sm:max-w-xs border border-gray-300 rounded-lg overflow-hidden">
           <div 
-            className="w-full h-32 bg-gray-200 flex items-center justify-center cursor-pointer"
+            className="w-full h-24 sm:h-32 bg-gray-200 flex items-center justify-center cursor-pointer"
             onClick={() => window.open(mapUrl, '_blank')}
           >
-            <MapPin className="h-8 w-8 text-red-500" />
+            <MapPin className="h-6 w-6 sm:h-8 sm:w-8 text-red-500" />
           </div>
           <div className="p-2 bg-white">
-            <p className="text-sm font-medium">ตำแหน่งที่แชร์</p>
-            <p className="text-xs text-gray-600">แตะเพื่อเปิดในแผนที่</p>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs sm:text-sm font-medium">ตำแหน่งที่แชร์</p>
+            <p className="text-[10px] sm:text-xs text-gray-600">แตะเพื่อเปิดในแผนที่</p>
+            <p className="text-[10px] sm:text-xs text-gray-500 mt-1 truncate">
               {latitude.toFixed(6)}, {longitude.toFixed(6)}
             </p>
           </div>
@@ -709,7 +693,7 @@ const handleCompleteTrade = async () => {
     }
 
     return (
-      <div className="text-[13px] whitespace-pre-wrap break-words">
+      <div className="text-xs sm:text-[13px] whitespace-pre-wrap break-words">
         {message.content}
       </div>
     );
@@ -809,11 +793,11 @@ const handleCompleteTrade = async () => {
 
   // Render review menu
   const renderReviewMenu = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl w-full max-w-md mx-4">
-        <div className="border-b border-gray-200 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+      <div className="bg-white rounded-xl w-full max-w-md mx-2 sm:mx-4">
+        <div className="border-b border-gray-200 p-3 sm:p-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">ให้คะแนนรีวิว</h3>
+            <h3 className="text-base sm:text-lg font-semibold">ให้คะแนนรีวิว</h3>
             <button
               onClick={() => {
                 setShowReviewMenu(false);
@@ -826,13 +810,13 @@ const handleCompleteTrade = async () => {
             </button>
           </div>
         </div>
-        <div className="p-6">
-          <p className="text-gray-600 mb-4">ให้คะแนนการซื้อขาย:</p>
-          <div className="flex mb-4">
+        <div className="p-4 sm:p-6">
+          <p className="text-sm sm:text-base text-gray-600 mb-4">ให้คะแนนการซื้อขาย:</p>
+          <div className="flex justify-center gap-1 sm:gap-2 mb-4">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
                 key={star}
-                size={24}
+                size={window.innerWidth < 640 ? 28 : 32}
                 className={`cursor-pointer ${star <= reviewRating ? 'text-yellow-400 fill-current' : 'text-gray-400'}`}
                 onClick={() => setReviewRating(star)}
               />
@@ -842,26 +826,26 @@ const handleCompleteTrade = async () => {
             value={reviewComment}
             onChange={(e) => setReviewComment(e.target.value)}
             placeholder="เขียนความคิดเห็น (ไม่บังคับ)"
-            className="w-full p-2 border border-gray-200 rounded-lg mb-4 resize-none"
+            className="w-full p-2 sm:p-3 border border-gray-200 rounded-lg mb-4 resize-none text-sm sm:text-base"
             rows={4}
           />
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-col sm:flex-row justify-end gap-2">
             <button
               onClick={() => {
                 setShowReviewMenu(false);
                 setReviewRating(0);
                 setReviewComment('');
               }}
-              className="px-4 py-2 bg-gray-200 rounded-lg"
+              className="w-full sm:w-auto px-4 py-2 bg-gray-200 rounded-lg text-sm sm:text-base"
             >
               ยกเลิก
             </button>
             <button
               onClick={handleSubmitReview}
-              disabled={!reviewRating}
-              className={`px-4 py-2 rounded-lg ${reviewRating ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'}`}
+              disabled={!reviewRating || submittingReview}
+              className={`w-full sm:w-auto px-4 py-2 rounded-lg text-sm sm:text-base ${reviewRating && !submittingReview ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'}`}
             >
-              ส่งรีวิว
+              {submittingReview ? 'กำลังส่ง...' : 'ส่งรีวิว'}
             </button>
           </div>
         </div>
@@ -878,37 +862,37 @@ const handleCompleteTrade = async () => {
   }
 
   return (
-    <div className="flex h-[85vh] md:h-[80vh] bg-gray-50 max-w-6xl mx-auto border border-gray-200 rounded-xl overflow-hidden mt-4">
+    <div className="flex h-screen md:h-[85vh] lg:h-[80vh] bg-gray-50 max-w-6xl mx-auto border-0 md:border md:border-gray-200 md:rounded-xl overflow-hidden md:mt-4">
       {/* Sidebar - Conversations List */}
-      <div className="w-64 md:w-72 border-r border-gray-200 bg-white flex flex-col">
-        <div className="border-b border-gray-200 p-3">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
+      <div className={`${showSidebar || !selectedConversation ? 'block' : 'hidden'} md:block w-full md:w-64 lg:w-72 border-r border-gray-200 bg-white flex flex-col absolute md:relative z-20 h-full md:h-auto`}>
+        <div className="border-b border-gray-200 p-2 sm:p-3">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={() => navigate(-1)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
-              <h1 className="text-xl font-semibold">ข้อความ</h1>
+              <h1 className="text-lg sm:text-xl font-semibold">ข้อความ</h1>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="relative p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <Bell className="h-5 w-5" />
+                <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
                 {unreadNotificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
                     {unreadNotificationCount}
                   </span>
                 )}
               </button>
               <button
                 onClick={() => setShowNewChatModal(true)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <Plus className="h-5 w-5" />
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             </div>
           </div>
@@ -923,47 +907,47 @@ const handleCompleteTrade = async () => {
               <button
                 key={conv._id}
                 onClick={() => handleSelectConversation(conv)}
-                className={`w-full p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors text-left ${
+                className={`w-full p-2 sm:p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors text-left ${
                   selectedConversation?._id === conv._id ? 'bg-blue-50' : ''
                 }`}
               >
-                <div className="flex gap-3">
+                <div className="flex gap-2 sm:gap-3">
                   <div className="flex-shrink-0">
                     {otherUser?.profilePicture ? (
                       <img
                         src={otherUser.profilePicture}
                         alt={otherUser.name}
-                        className="w-10 h-10 rounded-full object-cover"
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover"
                       />
                     ) : conv.product?.images?.[0] ? (
                       <img
                         src={conv.product.images[0]}
                         alt={conv.product.title}
-                        className="w-10 h-10 rounded-lg object-cover"
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <User className="h-5 w-5 text-blue-600" />
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <User className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                       </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium text-[13px] truncate">
+                    <div className="flex items-center justify-between mb-0.5 sm:mb-1">
+                      <span className="font-medium text-xs sm:text-[13px] truncate">
                         {otherUser?.name || 'ไม่ทราบชื่อ'}
                       </span>
                       {hasUnread && (
-                        <span className="bg-blue-600 text-white text-[10px] rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
+                        <span className="bg-blue-600 text-white text-[9px] sm:text-[10px] rounded-full px-1 sm:px-1.5 py-0.5 min-w-[16px] sm:min-w-[18px] text-center flex-shrink-0">
                           {conv.unreadCount}
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] text-gray-600 truncate mb-0.5">
+                    <p className="text-[10px] sm:text-[11px] text-gray-600 truncate mb-0.5">
                       {conv.product?.title || conv.message?.title || 'การสนทนา'}
                       {conv.isCompleted && <span className="text-red-500 ml-1"> (สิ้นสุด)</span>}
                     </p>
                     {conv.lastMessage && (
-                      <p className="text-[11px] text-gray-500 truncate">
+                      <p className="text-[10px] sm:text-[11px] text-gray-500 truncate">
                         {conv.lastMessage.content}
                       </p>
                     )}
@@ -975,12 +959,12 @@ const handleCompleteTrade = async () => {
         </div>
       </div>
 
-      {/* Notifications Panel */}
+      {/* Notifications Panel - Hidden on mobile, shown as modal */}
       {showNotifications && (
-        <div className="w-80 border-r border-gray-200 bg-white flex flex-col">
-          <div className="border-b border-gray-200 p-4">
+        <div className="fixed inset-0 md:relative md:w-80 border-r border-gray-200 bg-white flex flex-col z-30">
+          <div className="border-b border-gray-200 p-3 sm:p-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">การแจ้งเตือน</h2>
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900">การแจ้งเตือน</h2>
               <button
                 onClick={() => setShowNotifications(false)}
                 className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
@@ -993,15 +977,15 @@ const handleCompleteTrade = async () => {
           <div className="flex-1 overflow-y-auto">
             {notifications.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                <Bell className="mx-auto h-12 w-12 text-gray-300 mb-3" />
-                <p>ไม่มีการแจ้งเตือน</p>
+                <Bell className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-300 mb-3" />
+                <p className="text-sm sm:text-base">ไม่มีการแจ้งเตือน</p>
               </div>
             ) : (
-              <div className="p-3 space-y-3">
+              <div className="p-2 sm:p-3 space-y-2 sm:space-y-3">
                 {notifications.map((notification) => (
                   <div
                     key={notification._id}
-                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                    className={`p-2 sm:p-3 rounded-lg border cursor-pointer transition-colors ${
                       notification.status === 'read' 
                         ? 'bg-gray-50 border-gray-200' 
                         : 'bg-white border-gray-300 shadow-sm'
@@ -1011,49 +995,47 @@ const handleCompleteTrade = async () => {
                         markNotificationAsRead(notification._id);
                       }
 
-
-                      
                       if (
-        notification.title === 'คำขอรีวิวการซื้อขาย' &&
-        notification.conversationId &&
-        notification.productId
-      ) {
-        const relatedConversation = conversations.find(
-          (conv) => conv._id === notification.conversationId
-        );
-        if (relatedConversation) {
-          handleSelectConversation(relatedConversation);
-          setShowReviewMenu(true);
-        } else {
-          // ถ้าไม่พบ conversation, ดึงใหม่
-          fetchConversations().then(() => {
-            const newConversation = conversations.find(
-              (conv) => conv._id === notification.conversationId
-            );
-            if (newConversation) {
-              handleSelectConversation(newConversation);
-              setShowReviewMenu(true);
-            } else {
-              toast.error('ไม่พบการสนทนาที่เกี่ยวข้อง');
-            }
-          });
-        }
-      }
-
+                        notification.title === 'คำขอรีวิวการซื้อขาย' &&
+                        notification.conversationId &&
+                        notification.productId
+                      ) {
+                        const relatedConversation = conversations.find(
+                          (conv) => conv._id === notification.conversationId
+                        );
+                        if (relatedConversation) {
+                          handleSelectConversation(relatedConversation);
+                          setShowReviewMenu(true);
+                          setShowNotifications(false);
+                        } else {
+                          fetchConversations().then(() => {
+                            const newConversation = conversations.find(
+                              (conv) => conv._id === notification.conversationId
+                            );
+                            if (newConversation) {
+                              handleSelectConversation(newConversation);
+                              setShowReviewMenu(true);
+                              setShowNotifications(false);
+                            } else {
+                              toast.error('ไม่พบการสนทนาที่เกี่ยวข้อง');
+                            }
+                          });
+                        }
+                      }
                     }}
                   >
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-2 sm:gap-3">
                       <div className="flex-shrink-0 mt-0.5">
                         {getNotificationTypeIcon(notification.type)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-sm mb-1">
+                        <h4 className="font-semibold text-xs sm:text-sm mb-1">
                           {notification.title}
                         </h4>
-                        <p className="text-xs opacity-90 mb-2">
+                        <p className="text-[10px] sm:text-xs opacity-90 mb-2">
                           {notification.message}
                         </p>
-                        <div className="flex items-center justify-between text-xs opacity-75">
+                        <div className="flex items-center justify-between text-[10px] sm:text-xs opacity-75">
                           <span>
                             {formatDistanceToNow(new Date(notification.createdAt), {
                               addSuffix: true,
@@ -1061,7 +1043,7 @@ const handleCompleteTrade = async () => {
                             })}
                           </span>
                           {notification.status !== 'read' && (
-                            <span className="bg-blue-500 text-white px-2 py-0.5 rounded-full text-xs">
+                            <span className="bg-blue-500 text-white px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-xs">
                               ใหม่
                             </span>
                           )}
@@ -1077,29 +1059,37 @@ const handleCompleteTrade = async () => {
       )}
 
       {/* Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className={`${!showSidebar || selectedConversation ? 'flex' : 'hidden'} md:flex flex-1 flex-col absolute md:relative w-full h-full md:h-auto z-10`}>
         {selectedConversation ? (
           <>
-            <div className="border-b border-gray-200 bg-white p-3">
+            <div className="border-b border-gray-200 bg-white p-2 sm:p-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                  {/* Mobile back button */}
+                  <button
+                    onClick={() => setShowSidebar(true)}
+                    className="md:hidden p-1.5 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
+                  
                   {(() => {
                     const otherUser = getOtherParticipant(selectedConversation);
                     return (
                       <>
-                        <div className="relative">
+                        <div className="relative flex-shrink-0">
                           {otherUser?.profilePicture ? (
                             <img
                               src={otherUser.profilePicture}
                               alt={otherUser.name}
-                              className="w-10 h-10 rounded-full object-cover cursor-pointer"
+                              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover cursor-pointer"
                               onClick={() => navigate(`/profile/${otherUser._id}`)}
                             />
                           ) : selectedConversation.product?.images?.[0] ? (
                             <img
                               src={selectedConversation.product.images[0]}
                               alt={selectedConversation.product.title}
-                              className="w-10 h-10 rounded-lg object-cover cursor-pointer"
+                              className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover cursor-pointer"
                               onClick={() => {
                                 if (selectedConversation.product?._id) {
                                   navigate(`/product/${selectedConversation.product._id}`);
@@ -1107,17 +1097,17 @@ const handleCompleteTrade = async () => {
                               }}
                             />
                           ) : (
-                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center cursor-pointer"
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-100 flex items-center justify-center cursor-pointer"
                               onClick={() => otherUser && navigate(`/profile/${otherUser._id}`)}>
-                              <User className="h-5 w-5 text-blue-600" />
-                            </div>
+                              <User className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                                                          </div>
                           )}
                         </div>
-                        <div>
-                          <h2 className="font-semibold text-[15px]">
+                        <div className="min-w-0 flex-1">
+                          <h2 className="font-semibold text-sm sm:text-[15px] truncate">
                             {otherUser?.name || 'ไม่ทราบชื่อ'}
                           </h2>
-                          <p className="text-[12px] text-gray-600">
+                          <p className="text-[11px] sm:text-[12px] text-gray-600 truncate">
                             {selectedConversation.product?.title || 'การสนทนา'}
                             {selectedConversation.product?.sold && (
                               <span className="text-red-500 ml-1"> (ขายแล้ว)</span>
@@ -1128,58 +1118,58 @@ const handleCompleteTrade = async () => {
                     );
                   })()}
                 </div>
-                <div className="relative">
+                <div className="relative flex-shrink-0">
                   <button
                     onClick={() => setShowMoreMenu(!showMoreMenu)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
                   >
-                    <MoreVertical className="h-5 w-5 text-gray-600" />
+                    <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
                   </button>
                   {showMoreMenu && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                    <div className="absolute right-0 mt-2 w-44 sm:w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                       <button
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+                        className="w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-gray-50 flex items-center gap-2"
                         onClick={() => {
                           const other = getOtherParticipant(selectedConversation);
                           if (other?._id) navigate(`/profile/${other._id}`);
                           setShowMoreMenu(false);
                         }}
                       >
-                        <User className="h-4 w-4" />
+                        <User className="h-3 w-3 sm:h-4 sm:w-4" />
                         ดูโปรไฟล์
                       </button>
                       {selectedConversation.product?._id && (
                         <button
-                          className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+                          className="w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-gray-50 flex items-center gap-2"
                           onClick={() => {
                             navigate(`/product/${selectedConversation.product?._id}`);
                             setShowMoreMenu(false);
                           }}
                         >
-                          <ExternalLink className="h-4 w-4" />
+                          <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4" />
                           ดูสินค้านี้
                         </button>
                       )}
                       {selectedConversation.product && !selectedConversation.isCompleted && (
                         <button
-                          className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 border-t border-gray-100"
+                          className="w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-gray-50 flex items-center gap-2 border-t border-gray-100"
                           onClick={() => {
                             handleCompleteTrade();
                             setShowMoreMenu(false);
                           }}
                         >
-                          <CheckCircle className="h-4 w-4" />
+                          <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
                           ทำเครื่องหมายว่าขายแล้ว
                         </button>
                       )}
                       <button
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 border-t border-gray-100"
+                        className="w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-gray-50 flex items-center gap-2 border-t border-gray-100"
                         onClick={() => {
                           setShowReportMenu(true);
                           setShowMoreMenu(false);
                         }}
                       >
-                        <Flag className="h-4 w-4" />
+                        <Flag className="h-3 w-3 sm:h-4 sm:w-4" />
                         รายงาน
                       </button>
                     </div>
@@ -1189,18 +1179,18 @@ const handleCompleteTrade = async () => {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-gray-50">
+            <div className="flex-1 overflow-y-auto p-2 sm:p-3 space-y-2 sm:space-y-3 bg-gray-50">
               {selectedConversation.isCompleted && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
-                  <div className="flex items-start gap-3">
+                <div className="bg-red-50 border border-red-200 rounded-lg sm:rounded-xl p-3 sm:p-4 mb-3 sm:mb-4">
+                  <div className="flex items-start gap-2 sm:gap-3">
                     <div className="flex-shrink-0 pt-0.5">
-                      <CheckCircle className="h-6 w-6 text-red-500" />
+                      <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-red-500" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-red-900 mb-1 text-sm">
+                      <h4 className="font-semibold text-red-900 mb-1 text-xs sm:text-sm">
                         การซื้อขายสิ้นสุดแล้ว
                       </h4>
-                      <p className="text-xs text-red-800">
+                      <p className="text-[10px] sm:text-xs text-red-800">
                         การสนทนานี้เกี่ยวกับ "{selectedConversation.product?.title}" ได้สิ้นสุดลงแล้ว
                       </p>
                     </div>
@@ -1209,8 +1199,8 @@ const handleCompleteTrade = async () => {
               )}
               {messages.length === 0 ? (
                 <div className="text-center text-gray-500 mt-8">
-                  <p>เริ่มต้นการสนทนา</p>
-                  <p className="text-sm mt-2">ส่งข้อความเพื่อเริ่มการสนทนา</p>
+                  <p className="text-sm sm:text-base">เริ่มต้นการสนทนา</p>
+                  <p className="text-xs sm:text-sm mt-2">ส่งข้อความเพื่อเริ่มการสนทนา</p>
                 </div>
               ) : (
                 messages.map((message) => {
@@ -1223,27 +1213,27 @@ const handleCompleteTrade = async () => {
                       className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-                        className={`max-w-md rounded-2xl px-3 py-2 ${
+                        className={`max-w-[85%] sm:max-w-md rounded-xl sm:rounded-2xl px-2.5 sm:px-3 py-1.5 sm:py-2 ${
                           isCurrentUser
                             ? 'bg-blue-600 text-white'
                             : 'bg-white border border-gray-200 text-gray-900'
                         }`}
                       >
                         {!isCurrentUser && !hasAttachment && !hasLocation && (
-                          <p className="text-xs font-medium mb-1 text-gray-600">
+                          <p className="text-[10px] sm:text-xs font-medium mb-0.5 sm:mb-1 text-gray-600">
                             {message.sender.name}
                           </p>
                         )}
                         {renderMessageContent(message)}
-                        <div className="flex items-center justify-between mt-1">
-                          <p className={`text-[11px] ${isCurrentUser ? 'text-blue-100' : 'text-gray-500'}`}>
+                        <div className="flex items-center justify-between mt-0.5 sm:mt-1">
+                          <p className={`text-[10px] sm:text-[11px] ${isCurrentUser ? 'text-blue-100' : 'text-gray-500'}`}>
                             {formatDistanceToNow(new Date(message.createdAt), {
                               addSuffix: true,
                               locale: th
                             })}
                           </p>
                           {isCurrentUser && (
-                            <span className={`text-[10px] ml-2 ${message.read ? 'text-green-300' : 'text-blue-200'}`}>
+                            <span className={`text-[9px] sm:text-[10px] ml-2 ${message.read ? 'text-green-300' : 'text-blue-200'}`}>
                               {message.read ? 'อ่านแล้ว' : 'ส่งแล้ว'}
                             </span>
                           )}
@@ -1257,48 +1247,48 @@ const handleCompleteTrade = async () => {
             </div>
 
             {/* Message Input */}
-            <div className="border-t border-gray-200 bg-white p-3">
+            <div className="border-t border-gray-200 bg-white p-2 sm:p-3">
               {selectedConversation.isCompleted && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2 sm:p-3 mb-2 sm:mb-3">
                   <div className="flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4 text-yellow-600 flex-shrink-0" />
-                    <p className="text-xs text-yellow-800">
+                    <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600 flex-shrink-0" />
+                    <p className="text-[10px] sm:text-xs text-yellow-800">
                       การสนทนานี้สิ้นสุดแล้ว - ไม่สามารถส่งข้อความได้
                     </p>
                   </div>
                 </div>
               )}
               
-              <form onSubmit={handleSendMessage} className="flex items-end gap-2">
+              <form onSubmit={handleSendMessage} className="flex items-end gap-1.5 sm:gap-2">
                 <div className="relative">
                   <button
                     type="button"
                     onClick={() => setShowAttachMenu(!showAttachMenu)}
                     disabled={selectedConversation?.isCompleted || !selectedConversation?.isActive}
-                    className={`p-2 hover:bg-gray-100 rounded-lg transition-colors mb-1 ${
+                    className={`p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors mb-0.5 sm:mb-1 ${
                       selectedConversation?.isCompleted || !selectedConversation?.isActive ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
-                    <Paperclip className="h-5 w-5 text-gray-600" />
+                    <Paperclip className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
                   </button>
                   {showAttachMenu && !selectedConversation?.isCompleted && selectedConversation?.isActive && (
-                    <div className="absolute bottom-12 left-0 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                    <div className="absolute bottom-10 sm:bottom-12 left-0 w-44 sm:w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={attaching}
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+                        className="w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-gray-50 flex items-center gap-2"
                       >
-                        <Image className="h-4 w-4" />
+                        <Image className="h-3 w-3 sm:h-4 sm:w-4" />
                         {attaching ? 'กำลังอัพโหลด...' : 'อัพโหลดรูปภาพ'}
                       </button>
                       <button
                         type="button"
                         disabled={sharingLocation}
                         onClick={handleShareLocation}
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 border-t border-gray-100"
+                        className="w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-gray-50 flex items-center gap-2 border-t border-gray-100"
                       >
-                        <MapPin className="h-4 w-4" />
+                        <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
                         {sharingLocation ? 'กำลังแชร์ตำแหน่ง...' : 'แชร์ตำแหน่ง'}
                       </button>
                     </div>
@@ -1326,7 +1316,7 @@ const handleCompleteTrade = async () => {
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder={selectedConversation?.isCompleted || !selectedConversation?.isActive ? "การสนทนานี้สิ้นสุดแล้ว" : "พิมพ์ข้อความ..."}
                     disabled={selectedConversation?.isCompleted || !selectedConversation?.isActive}
-                    className={`w-full px-3 py-2.5 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-[14px] ${
+                    className={`w-full px-2.5 sm:px-3 py-2 sm:py-2.5 border border-gray-300 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-xs sm:text-[14px] ${
                       selectedConversation?.isCompleted || !selectedConversation?.isActive ? 'bg-gray-100 cursor-not-allowed' : ''
                     }`}
                     rows={1}
@@ -1343,18 +1333,24 @@ const handleCompleteTrade = async () => {
                 <button
                   type="submit"
                   disabled={!newMessage.trim() || sending || selectedConversation?.isCompleted || !selectedConversation?.isActive}
-                  className="p-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-1"
+                  className="p-2 sm:p-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-0.5 sm:mb-1 flex-shrink-0"
                 >
-                  <Send className="h-5 w-5" />
+                  <Send className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
               </form>
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-500">
+          <div className="flex-1 flex items-center justify-center text-gray-500 p-4">
             <div className="text-center">
-              <User className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-lg mb-2">เลือกการสนทนาเพื่อเริ่มแชท</p>
+              <User className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 text-gray-300" />
+              <p className="text-base sm:text-lg mb-2">เลือกการสนทนาเพื่อเริ่มแชท</p>
+              <button
+                onClick={() => setShowSidebar(true)}
+                className="md:hidden mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm"
+              >
+                เลือกการสนทนา
+              </button>
             </div>
           </div>
         )}
@@ -1365,22 +1361,22 @@ const handleCompleteTrade = async () => {
 
       {/* Report Menu */}
       {showReportMenu && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl w-full max-w-md mx-4">
-            <div className="border-b border-gray-200 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-xl w-full max-w-md mx-2 sm:mx-4">
+            <div className="border-b border-gray-200 p-3 sm:p-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">รายงานการสนทนา</h3>
+                <h3 className="text-base sm:text-lg font-semibold">รายงานการสนทนา</h3>
                 <button
                   onClick={() => setShowReportMenu(false)}
                   className="p-1 hover:bg-gray-100 rounded-lg"
                 >
-                  <ArrowLeft className="h-5 w-5" />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
             </div>
             
-            <div className="p-6">
-              <p className="text-gray-600 mb-4">เลือกเหตุผลในการรายงาน:</p>
+            <div className="p-4 sm:p-6">
+              <p className="text-sm sm:text-base text-gray-600 mb-4">เลือกเหตุผลในการรายงาน:</p>
               <div className="space-y-2">
                 {[
                   'ข้อความไม่เหมาะสม',
@@ -1392,7 +1388,7 @@ const handleCompleteTrade = async () => {
                   <button
                     key={reason}
                     onClick={() => handleReport(reason)}
-                    className="w-full text-left px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-xs sm:text-sm"
                   >
                     {reason}
                   </button>
@@ -1405,23 +1401,23 @@ const handleCompleteTrade = async () => {
 
       {/* New Chat Modal */}
       {showNewChatModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl w-full max-w-md mx-4">
-            <div className="border-b border-gray-200 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-xl w-full max-w-md mx-2 sm:mx-4">
+            <div className="border-b border-gray-200 p-3 sm:p-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">เริ่มการสนทนาใหม่</h3>
+                <h3 className="text-base sm:text-lg font-semibold">เริ่มการสนทนาใหม่</h3>
                 <button
                   onClick={() => setShowNewChatModal(false)}
                   className="p-1 hover:bg-gray-100 rounded-lg"
                 >
-                  <ArrowLeft className="h-5 w-5" />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
             </div>
             
-            <div className="p-6 text-center">
-              <User className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-              <p className="text-gray-600 mb-4">
+            <div className="p-4 sm:p-6 text-center">
+              <User className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 text-gray-400" />
+              <p className="text-sm sm:text-base text-gray-600 mb-4">
                 เริ่มการสนทนาจากหน้าสินค้าหรือโพสต์โดยกดปุ่ม "แชทกับผู้ขาย"
               </p>
               <button
@@ -1429,7 +1425,7 @@ const handleCompleteTrade = async () => {
                   setShowNewChatModal(false);
                   navigate('/');
                 }}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                className="bg-blue-600 text-white px-5 sm:px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
               >
                 ไปหน้าหลัก
               </button>

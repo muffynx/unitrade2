@@ -175,7 +175,85 @@
   "footer.copyright": "UniTrade. All rights reserved.",
   
     "footer.brand_unifooter": "Uni",
-    "footer.brand_trade": "Trade"
+    "footer.brand_trade": "Trade",
     
+  "manage_your_account_settings": "Manage your account settings and preferences.",
+  "back": "Back",
+  "failed_to_load_profile": "Failed to load user profile.",
+  "profile_updated_successfully": "Profile updated successfully.",
+  "update_failed": "Update failed.",
+  "passwords_do_not_match": "New passwords do not match.",
+  "password_min_length": "Password must be at least 6 characters long.",
+  "password_changed_successfully": "Password changed successfully.",
+  "password_change_failed": "Password change failed.",
+  "language_changed": "Language changed successfully.",
+  "please_upload_image_file": "Please upload an image file only.",
+  "image_too_large": "Image size must be less than 5 MB.",
+  "profile_image_updated": "Profile image updated.",
+  "image_upload_failed": "Image upload failed.",
+  "confirm_account_deletion": "Are you sure you want to delete this account? This action cannot be undone.",
+  "account_deleted_successfully": "Account deleted successfully.",
+  "account_deletion_failed": "Account deletion failed.",
+
+  "security": "Security",
+  "notifications": "Notifications",
+  "appearance": "Appearance",
+  "profile_settings": "Profile Settings",
+  "full_name": "Full Name",
+  "username": "Username",
+  "email": "Email",
+  "phone_number": "Phone Number",
+  "university": "University",
+  "student_id": "Student ID",
+  "saving": "Saving...",
+  "save_changes": "Save Changes",
+  "cancel": "Cancel",
+
+  "security_settings": "Security Settings",
+  "current_password": "Current Password",
+  "enter_current_password": "Enter current password",
+  "new_password": "New Password",
+  "enter_new_password": "Enter new password",
+  "confirm_password": "Confirm Password",
+  "confirm_new_password": "Confirm new password",
+  "changing_password": "Changing password...",
+  "change_password": "Change Password",
+  "dangerous_zone": "Dangerous Zone",
+  "delete_account": "Delete Account",
+  "delete_account_warning": "Once you delete your account, all your data will be permanently removed.",
+
+  "notification_settings": "Notification Settings",
+  "email_notifications": "Email Notifications",
+  "enable_email_notifications_description": "Receive important updates and activity alerts via email.",
+  "push_notifications": "Push Notifications",
+  "enable_push_notifications_description": "Enable notifications sent directly to your device.",
+  "marketing_emails": "Marketing Emails",
+  "enable_marketing_emails_description": "Receive emails about promotions and new products.",
+
+  "appearance_settings": "Appearance Settings",
+  "language": "Language",
+  "theme": "Theme",
+  "light": "Light",
+  "dark": "Dark",
+  "system": "System",
+
+
+  "navigation": "Navigation",
+  "account": "Account",
   
+ 
+  
+  "chat": "Chat",
+  "mark_chat_read": "Mark All Chat Read",
+  "loading": "Loading",
+  "no_notifications": "No new notifications",
+  "load_more": "Load More",
+  "go_to_chat": "Go to Chat",
+  
+  "new_message": "New Message",
+  "system_notification": "System Notification",
+  "new_comment": "New Comment",
+  "new_chat": "New Chat",
+  "new_comment_in": "New comment in"
 }
+  

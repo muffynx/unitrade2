@@ -74,7 +74,7 @@ export default function AdminMessages() {
   const [urgencyFilter, setUrgencyFilter] = useState<UrgencyFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
 
-  const API_URL = import.meta.env.VITE_API_URL || "https://unitrade-yrd9.onrender.com";
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
   const token = localStorage.getItem("adminToken");
 
   // Toast Notification
@@ -268,6 +268,7 @@ export default function AdminMessages() {
         </div>
 
         {/* Stats Cards */}
+        {/* ✅ grid-cols-2 lg:grid-cols-4 responsiveness นี้ดีอยู่แล้วสำหรับมือถือและแท็บเล็ต */}
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
             <div className="flex items-center justify-between">
@@ -319,6 +320,7 @@ export default function AdminMessages() {
         </div>
 
         {/* Filters and Search */}
+        {/* ✅ flex-col md:flex-row responsiveness นี้ดีอยู่แล้วสำหรับมือถือและแท็บเล็ต */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex flex-col md:flex-row gap-3">
             {/* Search */}
@@ -361,7 +363,7 @@ export default function AdminMessages() {
           </div>
         </div>
 
-        {/* Messages Table */}
+        {/* ✅ Messages Table / Card List */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center h-64">
@@ -376,137 +378,229 @@ export default function AdminMessages() {
               </div>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      หัวข้อ
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      ผู้โพสต์
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      หมวดหมู่
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      ความเร่งด่วน
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      สถิติ
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      วันที่โพสต์
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      การดำเนินการ
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredMessages.map((msg) => {
-                    const urgency = getUrgencyLabel(msg.urgency);
-                    return (
-                      <tr key={msg._id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="max-w-xs">
-                            <div className="font-medium text-gray-900 line-clamp-2">
-                              {msg.title}
+            <>
+              {/* ✅ 1. Table View (ซ่อนในจอมือถือ, แสดงในจอ md ขึ้นไป) */}
+              <div className="overflow-x-auto hidden md:block">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        หัวข้อ
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        ผู้โพสต์
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        หมวดหมู่
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        ความเร่งด่วน
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        สถิติ
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        วันที่โพสต์
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        การดำเนินการ
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredMessages.map((msg) => {
+                      const urgency = getUrgencyLabel(msg.urgency);
+                      return (
+                        <tr key={msg._id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="max-w-xs">
+                              <div className="font-medium text-gray-900 line-clamp-2">
+                                {msg.title}
+                              </div>
+                              <div className="text-xs text-gray-500 line-clamp-1 mt-0.5">
+                                {msg.description}
+                              </div>
                             </div>
-                            <div className="text-xs text-gray-500 line-clamp-1 mt-0.5">
-                              {msg.description}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
-                            {/* ใช้ UserIcon Placeholder เนื่องจาก MessageAdmin interface ไม่มี avatar */}
-                            <div className="h-9 w-9 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-2">
+                              {/* ใช้ UserIcon Placeholder */}
+                              <div className="h-9 w-9 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
                                 <UserIcon className="h-5 w-5 text-gray-500" />
-                            </div>
-                            <div>
-                              <div className="font-medium text-gray-900 line-clamp-1">
-                                {msg.user?.name || "ไม่ระบุชื่อ"}
                               </div>
-                              <div className="text-xs text-gray-500 line-clamp-1">
-                                {msg.user?.email}
+                              <div>
+                                <div className="font-medium text-gray-900 line-clamp-1">
+                                  {msg.user?.name || "ไม่ระบุชื่อ"}
+                                </div>
+                                <div className="text-xs text-gray-500 line-clamp-1">
+                                  {msg.user?.email}
+                                </div>
                               </div>
                             </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border bg-blue-100 text-blue-800 border-blue-200">
+                              <Tag size={14} />
+                              {msg.category}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${urgency.color}`}
+                            >
+                              {urgency.label}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex flex-col gap-1 text-xs text-gray-600">
+                              <div className="flex items-center gap-1">
+                                <FaEye size={12} />
+                                <span className="font-medium">{msg.views.toLocaleString()} วิว</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <MessageCircle size={12} />
+                                <span className="font-medium">{msg.comments?.length || 0} คอมเมนต์</span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(msg.createdAt).toLocaleDateString("th-TH", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              })}
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-gray-400 mt-1">
+                              <Clock className="h-3 w-3" />
+                              {new Date(msg.createdAt).toLocaleTimeString("th-TH", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <button
+                              onClick={() => {
+                                setSelectedMessage(msg);
+                                setShowDetailModal(true);
+                              }}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors shadow-md"
+                            >
+                              <FaEye className="h-3 w-3" />
+                              ดู
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {filteredMessages.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="px-6 py-12 text-center">
+                          <div className="flex flex-col items-center justify-center">
+                            <MessageCircle className="h-12 w-12 text-gray-400 mb-3" />
+                            <p className="text-gray-500 text-lg font-medium">ไม่พบข้อความ</p>
+                            <p className="text-gray-400 text-sm mt-1">
+                              ลองเปลี่ยนตัวกรองหรือคำค้นหา
+                            </p>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border bg-blue-100 text-blue-800 border-blue-200">
-                            <Tag size={14} />
-                            {msg.category}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${urgency.color}`}
-                          >
-                            {urgency.label}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex flex-col gap-1 text-xs text-gray-600">
-                            <div className="flex items-center gap-1">
-                              <FaEye size={12} />
-                              <span className="font-medium">{msg.views.toLocaleString()} วิว</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <MessageCircle size={12} />
-                              <span className="font-medium">{msg.comments?.length || 0} คอมเมนต์</span>
-                            </div>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* ✅ 2. Card List View (แสดงในจอมือถือ, ซ่อนในจอ md ขึ้นไป) */}
+              <div className="md:hidden divide-y divide-gray-200">
+                {filteredMessages.map((msg) => {
+                  const urgency = getUrgencyLabel(msg.urgency);
+                  return (
+                    <div key={msg._id} className="p-4">
+                      {/* Top: Title & Urgency */}
+                      <div className="flex justify-between items-start gap-3">
+                        <h3 className="font-semibold text-gray-900 line-clamp-2">
+                          {msg.title}
+                        </h3>
+                        <span
+                          className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium border ${urgency.color} flex-shrink-0`}
+                        >
+                          {urgency.label}
+                        </span>
+                      </div>
+
+                      {/* User Info */}
+                      <div className="flex items-center gap-2 mt-3">
+                        <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                          <UserIcon className="h-4 w-4 text-gray-500" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-800 text-sm line-clamp-1">
+                            {msg.user?.name || "ไม่ระบุชื่อ"}
                           </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                            <Calendar className="h-3 w-3" />
+                          <div className="text-xs text-gray-500 line-clamp-1">
+                            {msg.user?.email}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Meta Info */}
+                      <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-gray-600">
+                        <div className="flex items-center gap-1.5">
+                          <Tag size={14} className="text-gray-400 flex-shrink-0" />
+                          <span className="truncate">{msg.category}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Calendar size={14} className="text-gray-400 flex-shrink-0" />
+                          <span className="truncate">
                             {new Date(msg.createdAt).toLocaleDateString("th-TH", {
                               day: "numeric",
                               month: "short",
-                              year: "numeric",
                             })}
-                          </div>
-                          <div className="flex items-center gap-1.5 text-xs text-gray-400 mt-1">
-                            <Clock className="h-3 w-3" />
-                            {new Date(msg.createdAt).toLocaleTimeString("th-TH", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <button
-                            onClick={() => {
-                              setSelectedMessage(msg);
-                              setShowDetailModal(true);
-                            }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors shadow-md"
-                          >
-                            <FaEye className="h-3 w-3" />
-                            ดู
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  {filteredMessages.length === 0 && (
-                    <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center">
-                        <div className="flex flex-col items-center justify-center">
-                          <MessageCircle className="h-12 w-12 text-gray-400 mb-3" />
-                          <p className="text-gray-500 text-lg font-medium">ไม่พบข้อความ</p>
-                          <p className="text-gray-400 text-sm mt-1">
-                            ลองเปลี่ยนตัวกรองหรือคำค้นหา
-                          </p>
+                          </span>
                         </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                        <div className="flex items-center gap-1.5">
+                          <FaEye size={12} className="text-gray-400 flex-shrink-0" />
+                          <span>{msg.views.toLocaleString()} วิว</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <MessageCircle size={12} className="text-gray-400 flex-shrink-0" />
+                          <span>{msg.comments?.length || 0} คอมเมนต์</span>
+                        </div>
+                      </div>
+
+                      {/* Action Button */}
+                      <div className="mt-4">
+                        <button
+                          onClick={() => {
+                            setSelectedMessage(msg);
+                            setShowDetailModal(true);
+                          }}
+                          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors shadow-md"
+                        >
+                          <FaEye className="h-4 w-4" />
+                          ดูรายละเอียด
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* No messages view for mobile */}
+                {filteredMessages.length === 0 && (
+                  <div className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <MessageCircle className="h-12 w-12 text-gray-400 mb-3" />
+                      <p className="text-gray-500 text-lg font-medium">ไม่พบข้อความ</p>
+                      <p className="text-gray-400 text-sm mt-1">
+                        ลองเปลี่ยนตัวกรองหรือคำค้นหา
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -541,7 +635,7 @@ export default function AdminMessages() {
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <label className="text-sm font-medium text-gray-500 mb-2 block">ผู้โพสต์</label>
                   <div className="mt-2 flex items-center gap-3">
-                     {/* Used UserIcon Placeholder */}
+                    {/* Used UserIcon Placeholder */}
                     <div className="h-12 w-12 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
                       <UserIcon className="h-6 w-6 text-gray-600" />
                     </div>
@@ -555,6 +649,7 @@ export default function AdminMessages() {
                 </div>
 
                 {/* Tags */}
+                {/* ✅ grid-cols-2 lg:grid-cols-3 นี้ดีอยู่แล้วสำหรับมือถือ */}
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
                     <label className="text-sm font-medium text-gray-500">หมวดหมู่</label>
@@ -601,7 +696,8 @@ export default function AdminMessages() {
                 {/* Stats */}
                 <div className="bg-gray-100 p-4 rounded-xl border border-gray-200">
                   <label className="text-sm font-medium text-gray-700 mb-3 block">สถิติ</label>
-                  <div className="grid grid-cols-3 gap-4">
+                  {/* ✅ ปรับจาก grid-cols-3 เป็น grid-cols-1 sm:grid-cols-3 เพื่อให้แสดงผลดีขึ้นในมือถือ */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="flex items-center gap-2">
                       <div className="p-2 bg-white rounded-lg">
                         <FaEye className="text-gray-600" size={20} />

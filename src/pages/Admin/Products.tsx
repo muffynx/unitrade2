@@ -70,7 +70,7 @@ export default function AdminProducts() {
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [conditionFilter, setConditionFilter] = useState<ConditionFilter>("all");
 
-  const API_URL = import.meta.env.VITE_API_URL || "https://unitrade-yrd9.onrender.com";
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
   const token = localStorage.getItem("adminToken");
 
   // ✅ Custom function for error handling on user image loading
@@ -248,11 +248,11 @@ export default function AdminProducts() {
     switch (condition) {
       case "new":
         return "ใหม่";
-      case "like-new":
+      case "used_like_new":
         return "เหมือนใหม่";
-      case "good":
+      case "used_good":
         return "ดี";
-      case "fair":
+      case "used-fair":
         return "พอใช้";
       default:
         return condition;
@@ -263,11 +263,11 @@ export default function AdminProducts() {
     switch (condition) {
       case "new":
         return "bg-green-100 text-green-800 border-green-200";
-      case "like-new":
+      case "used_like_new":
         return "bg-blue-100 text-blue-800 border-blue-200";
-      case "good":
+      case "used_good":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "fair":
+      case "used-fair":
         return "bg-orange-100 text-orange-800 border-orange-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
@@ -396,9 +396,75 @@ export default function AdminProducts() {
             </select>
           </div>
         </div>
-
-        {/* Products Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+{/* ================= Mobile/iPad Card List (แทนที่ table) ================= */}
+        <div className="lg:hidden flex flex-col gap-2 p-2">
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+            </div>
+          ) : error ? (
+            <div className="text-red-600 bg-red-50 border border-red-200 p-6 rounded-xl m-6 flex items-center gap-3">
+              <AlertCircle size={24} />
+              <div>
+                <p className="font-medium">{error}</p>
+                <p className="text-sm text-red-500 mt-1">กรุณาลองใหม่อีกครั้ง</p>
+              </div>
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="py-10 text-center">
+              <Package className="h-10 w-10 text-gray-400 mb-3 mx-auto" />
+              <p className="text-gray-500 text-lg font-medium">ไม่พบสินค้า</p>
+              <p className="text-gray-400 text-sm mt-1">ลองเปลี่ยนตัวกรองหรือคำค้นหา</p>
+            </div>
+          ) : (
+            filteredProducts.map(product => (
+              <div
+                key={product._id}
+                className="border rounded-lg p-3 flex flex-col gap-2 bg-white"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                    <img
+                      src={product.images?.[0] || "https://via.placeholder.com/300x200?text=No+Image"}
+                      alt={product.title}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-bold text-gray-900 text-base line-clamp-2">{product.title}</div>
+                    <div className="text-xs text-gray-500 line-clamp-1">{product.description}</div>
+                    <div className="text-xs mt-1 text-gray-600 flex gap-2">
+                      <span className="inline-flex gap-1 items-center"><Tag size={12} />{product.category}</span>
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs border ${getConditionColor(product.condition)}`}>
+                        {getConditionLabel(product.condition)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between mt-2 text-xs gap-2">
+                  <div className="flex items-center gap-1">
+                    <FaEye size={12} />
+                    {product.views}
+                    <FaHeart size={12} className="ml-2 text-red-400" />
+                    {product.favorites?.length || 0}
+                  </div>
+                  <div className="font-bold text-green-700">฿{product.price.toLocaleString()}</div>
+                  <button
+                    onClick={() => {
+                      setSelectedProduct(product);
+                      setShowDetailModal(true);
+                    }}
+                    className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                  >
+                    <FaEye className="h-3 w-3 mr-1" /> ดู
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        {/* ============ Desktop Table ============= */}
+        <div className="hidden lg:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>

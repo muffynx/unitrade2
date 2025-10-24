@@ -175,6 +175,87 @@
   "footer.copyright": "UniTrade. สงวนลิขสิทธิ์ทั้งหมด",
     "footer.brand_unifooter": "Uni",
     "footer.brand_trade": "Trade",
-    "footer.copyright": "UniTrade. สงวนลิขสิทธิ์ทั้งหมด"
+
+  "manage_your_account_settings": "จัดการการตั้งค่าบัญชีและข้อมูลส่วนตัวของคุณ",
+  "back": "ย้อนกลับ",
+  "failed_to_load_profile": "ไม่สามารถโหลดข้อมูลผู้ใช้ได้",
+  "profile_updated_successfully": "อัปเดตข้อมูลส่วนตัวสำเร็จ",
+  "update_failed": "ไม่สามารถอัปเดตได้",
+  "passwords_do_not_match": "รหัสผ่านใหม่ไม่ตรงกัน",
+  "password_min_length": "รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร",
+  "password_changed_successfully": "เปลี่ยนรหัสผ่านสำเร็จ",
+  "password_change_failed": "เปลี่ยนรหัสผ่านไม่สำเร็จ",
+  "language_changed": "เปลี่ยนภาษาเรียบร้อยแล้ว",
+  "please_upload_image_file": "กรุณาอัปโหลดเฉพาะไฟล์รูปภาพ",
+  "image_too_large": "ขนาดรูปภาพต้องไม่เกิน 5 MB",
+  "profile_image_updated": "อัปเดตภาพโปรไฟล์สำเร็จ",
+  "image_upload_failed": "อัปโหลดรูปภาพไม่สำเร็จ",
+  "confirm_account_deletion": "คุณแน่ใจหรือไม่ว่าต้องการลบบัญชีนี้? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
+  "account_deleted_successfully": "ลบบัญชีสำเร็จ",
+  "account_deletion_failed": "ลบบัญชีไม่สำเร็จ",
+
+  "security": "ความปลอดภัย",
+  "notifications": "การแจ้งเตือน",
+  "appearance": "ลักษณะการแสดงผล",
+  "profile_settings": "การตั้งค่าโปรไฟล์",
+  "full_name": "ชื่อ-นามสกุล",
+  "username": "ชื่อผู้ใช้",
+  "email": "อีเมล",
+  "phone_number": "เบอร์โทรศัพท์",
+  "university": "มหาวิทยาลัย/สถาบัน",
+  "student_id": "รหัสนักศึกษา",
+  "saving": "กำลังบันทึก...",
+  "save_changes": "บันทึกการเปลี่ยนแปลง",
+  "cancel": "ยกเลิก",
+
+  "security_settings": "การตั้งค่าความปลอดภัย",
+  "current_password": "รหัสผ่านปัจจุบัน",
+  "enter_current_password": "ป้อนรหัสผ่านปัจจุบัน",
+  "new_password": "รหัสผ่านใหม่",
+  "enter_new_password": "ป้อนรหัสผ่านใหม่",
+  "confirm_password": "ยืนยันรหัสผ่าน",
+  "confirm_new_password": "ยืนยันรหัสผ่านใหม่",
+  "changing_password": "กำลังเปลี่ยนรหัสผ่าน...",
+  "change_password": "เปลี่ยนรหัสผ่าน",
+  "dangerous_zone": "พื้นที่อันตราย",
+  "delete_account": "ลบบัญชี",
+  "delete_account_warning": "เมื่อคุณลบบัญชี ข้อมูลทั้งหมดของคุณจะถูกลบออกอย่างถาวร",
+
+  "notification_settings": "การตั้งค่าการแจ้งเตือน",
+  "email_notifications": "การแจ้งเตือนทางอีเมล",
+  "enable_email_notifications_description": "รับการแจ้งเตือนเกี่ยวกับการอัปเดตและความเคลื่อนไหวที่สำคัญ",
+  "push_notifications": "การแจ้งเตือนแบบพุช",
+  "enable_push_notifications_description": "เปิดใช้งานการแจ้งเตือนโดยตรงไปยังอุปกรณ์ของคุณ",
+  "marketing_emails": "อีเมลการตลาด",
+  "enable_marketing_emails_description": "รับอีเมลเกี่ยวกับโปรโมชั่นและผลิตภัณฑ์ใหม่ๆ",
+  
+  "appearance_settings": "การตั้งค่าลักษณะการแสดงผล",
+  "language": "ภาษา",
+  "theme": "ธีม",
+  "light": "สว่าง",
+  "dark": "มืด",
+  "system": "ระบบ",
+
+
+ 
+
+
+
+  "navigation": "เมนูหลัก",
+  "account": "บัญชี",
+
+
+  "chat": "แชท",
+  "mark_chat_read": "ทำเครื่องหมายว่าอ่านทั้งหมด",
+  "loading": "กำลังโหลด",
+  "no_notifications": "ไม่มีการแจ้งเตือนใหม่",
+  "load_more": "โหลดเพิ่มเติม",
+  "go_to_chat": "ไปที่แชท",
+
+  "new_message": "ข้อความใหม่",
+  "system_notification": "ประกาศจากระบบ",
+  "new_comment": "ความคิดเห็นใหม่",
+  "new_chat": "แชทใหม่",
+  "new_comment_in": "ความคิดเห็นใหม่ใน"
 
 }
