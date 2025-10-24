@@ -1,0 +1,180 @@
+{
+  "browse": "เรียกดู",
+  "dashboard": "แดชบอร์ด",
+  "contact": "ติดต่อ",
+  "search_products": "ค้นหาสินค้า...",
+  "profile": "โปรไฟล์",
+  "my_products": "สินค้าของฉัน",
+  "settings": "การตั้งค่า",
+  "logout": "ออกจากระบบ",
+  "sign_in": "เข้าสู่ระบบ",
+  "sign_up": "สมัครสมาชิก",
+  "logged_out": "คุณออกจากระบบเรียบร้อยแล้ว",
+  
+  "category_all_items": "สินค้าทั้งหมด",
+  "category_electronics": "เครื่องใช้ไฟฟ้า",
+  "category_furniture": "เฟอร์นิเจอร์",
+  "category_general": "ทั่วไป",
+  "category_textbooks": "ตำราเรียน",
+  "category_sports": "อุปกรณ์กีฬา",
+  "category_other": "อื่นๆ",
+  "category_unknown": "ไม่ระบุหมวดหมู่",
+
+  "hero_title_part1": "ซื้อขายกับ",
+  "hero_title_part2": "เพื่อนนักศึกษา",
+  "hero_description": "ตลาดที่เรียบง่ายและเชื่อถือได้สำหรับนักศึกษามหาวิทยาลัยเพื่อซื้อและขายตำราเรียน, เครื่องใช้ไฟฟ้า และอื่นๆ",
+  "sell_something_button": "+ ลงขายสินค้า",
+  "start_looking_button": "+ โพสต์ตามหาสินค้า",
+  
+  "stat_active_listings": "สินค้าที่ขายอยู่",
+  "stat_students": "นักศึกษา",
+  "stat_rating": "คะแนน",
+
+  "browse_categories_heading": "เลือกดูหมวดหมู่",
+  
+  "latest_listings_heading": "รายการล่าสุด",
+  "latest_listings_subtitle": "ที่นักศึกษาเพิ่งโพสต์",
+  "items_found_label": "รายการ",
+  "loading_listings_message": "กำลังโหลดรายการ...",
+  "no_listings_found": "ไม่พบรายการสินค้า",
+  "no_items_in_category": "ไม่พบสินค้าในหมวดหมู่ {{category}}",
+  "currency_unit": "บาท",
+  
+  "recent_messages_heading": "ข้อความตามหาล่าสุด",
+  "recent_messages_subtitle": "ที่นักศึกษาตามหาสินค้า",
+  "view_detail_button": "ดูรายละเอียด",
+  "view_all_listings_button": "ดูรายการทั้งหมด",
+  "view_all_messages_button": "ดูข้อความทั้งหมด",
+  
+  "all_listings_heading": "รายการสินค้าทั้งหมด",
+  "all_listings_subtitle": "เรียกดูสินค้าที่มีทั้งหมด",
+  "all_messages_heading": "ข้อความตามหาทั้งหมด",
+  "all_messages_subtitle": "เรียกดูข้อความตามหาของนักศึกษา",
+  
+  "search_placeholder": "ค้นหาสินค้า...",
+  "search_messages_placeholder": "ค้นหาข้อความ...",
+  "sort_newest": "ใหม่ล่าสุด",
+  "sort_oldest": "เก่าที่สุด",
+  "sort_price_high": "ราคา: สูงไปต่ำ",
+  "sort_price_low": "ราคา: ต่ำไปสูง",
+  "sort_most_liked": "ถูกใจมากที่สุด",
+  "sort_most_viewed": "ดูมากที่สุด",
+  
+  "no_search_results": "ไม่พบผลการค้นหา",
+  "try_different_search": "ลองใช้คำค้นหาอื่น",
+  "be_first_to_list": "เป็นคนแรกที่ลงขายสินค้า!",
+  "be_first_to_post": "เป็นคนแรกที่โพสต์ข้อความ!",
+  "clear_search": "ล้างการค้นหา",
+  "retry_button": "ลองใหม่",
+  "loading_messages_message": "กำลังโหลดข้อความ...",
+  "no_messages_found": "ไม่พบข้อความ",
+  "messages_found_label": "ข้อความที่พบ",
+  
+  "safe_trading_heading": "การซื้อขายที่ปลอดภัยและเชื่อถือได้",
+  "feature_verified_students_label": "นักศึกษาที่ได้รับการยืนยัน",
+  "feature_verified_students_desc": "ผู้ใช้ทั้งหมดเป็นนักศึกษามหาวิทยาลัยที่ได้รับการยืนยัน",
+  "feature_quick_responses_label": "ตอบกลับรวดเร็ว",
+  "feature_quick_responses_desc": "เชื่อมต่อกับผู้ขายได้ทันทีในวิทยาเขต",
+  "feature_community_driven_label": "ขับเคลื่อนโดยชุมชน",
+  "feature_community_driven_desc": "สร้างโดยนักศึกษา เพื่อนักศึกษา",
+  
+  "modal_post_new_item_title": "โพสต์สินค้าใหม่",
+  "modal_post_messages_title": "โพสต์ข้อความตามหา",
+  "auth_required_message": "กรุณาเข้าสู่ระบบก่อนดำเนินการ",
+  "fetch_listings_error": "ไม่สามารถดึงรายการสินค้าได้",
+  "fetch_messages_error": "ไม่สามารถดึงข้อความตามหาได้",
+
+  "condition_new": "ใหม่",
+  "condition_used_like_new": "มือสอง - สภาพเหมือนใหม่",
+  "condition_used_good": "มือสอง - สภาพดี",
+  "condition_used_fair": "มือสอง - สภาพพอใช้",
+  
+  "label_product_images": "รูปภาพสินค้า",
+  "label_click_or_drag": "คลิกเพื่ออัปโหลดหรือลากและวาง",
+  "label_file_requirements": "PNG, JPG, GIF ขนาดไม่เกิน 10MB (สูงสุด 10 รูป)",
+  "alt_image_preview": "รูปตัวอย่าง {{index}}",
+  "button_remove": "ลบ",
+  "button_remove_image": "ลบรูปภาพ",
+  
+  "label_product_title": "ชื่อสินค้า",
+  "placeholder_product_title": "ใส่ชื่อสินค้า",
+  "label_price": "ราคา ({{currency}})",
+  "label_category": "หมวดหมู่",
+  "select_category_placeholder": "เลือกหมวดหมู่",
+  "label_description": "คำอธิบาย",
+  "placeholder_description": "อธิบายรายละเอียดสินค้าของคุณ.....",
+  "label_condition": "สภาพสินค้า",
+  "select_condition_placeholder": "เลือกรถภาพสินค้า",
+  "label_location": "สถานที่",
+  "placeholder_location": "เช่น หนองคาย, ขอนแก่น",
+
+  "button_cancel": "ยกเลิก",
+  "button_post_item": "ลงขายสินค้า",
+  "button_posting": "กำลังโพสต์...",
+
+  "validation_error_min_image": "กรุณาอัปโหลดรูปภาพอย่างน้อยหนึ่งรูป",
+  "auth_error_no_token": "ไม่พบโทเคนยืนยันตัวตน",
+  "product_create_success": "สร้างสินค้าสำเร็จ!",
+  "product_create_fail": "สร้างสินค้าไม่สำเร็จ",
+  "upload_error_type": "ไฟล์ {{fileName}} ไม่ใช่ไฟล์รูปภาพที่รองรับ (รองรับเฉพาะ PNG, JPG, GIF)",
+  "upload_error_size": "ไฟล์ {{fileName}} มีขนาดใหญ่กว่า 10MB",
+  "upload_error_max_images": "คุณสามารถอัปโหลดรูปภาพได้สูงสุด 10 รูป",
+  
+  "common.cancel": "ยกเลิก",
+  "common.posting": "กำลังโพสต์...",
+  
+  "errors.required_fields": "กรุณากรอกข้อมูลในช่องที่มีเครื่องหมาย (*) ให้ครบถ้วน",
+  "errors.login_required": "กรุณาเข้าสู่ระบบเพื่อโพสต์ข้อความตามหา",
+  "errors.server_error": "ไม่สามารถโพสต์ข้อความได้ เนื่องจากข้อผิดพลาดของเซิร์ฟเวอร์",
+
+  "categories.electronics": "เครื่องใช้ไฟฟ้า",
+  "categories.furniture": "เฟอร์นิเจอร์",
+  "categories.textbooks": "ตำราเรียน",
+  "categories.sports": "อุปกรณ์กีฬา",
+  "categories.other": "อื่นๆ",
+
+  "urgency.low": "ไม่เร่งด่วน (ไม่รีบ)",
+  "urgency.medium": "ปานกลาง (ภายในหนึ่งสัปดาห์)",
+  "urgency.high": "เร่งด่วน (ต้องการด่วนที่สุด)",
+
+  "post_message.title_label": "หัวข้อ",
+  "post_message.title_placeholder": "คุณกำลังตามหาสินค้าอะไร?",
+  
+  "post_message.category_label": "หมวดหมู่",
+  "post_message.select_category_placeholder": "เลือกหมวดหมู่",
+  
+  "post_message.description_label": "รายละเอียด",
+  "post_message.description_placeholder": "ระบุรายละเอียดสินค้าที่ต้องการ สภาพ สี ฯลฯ",
+  
+  "post_message.location_label": "สถานที่",
+  "post_message.location_placeholder": "วิทยาเขต/พื้นที่ของคุณ (เช่น มข., มจพ.)",
+  
+  "post_message.budget_label": "งบประมาณ (บาท)",
+  "post_message.budget_placeholder": "ไม่บังคับ (เช่น 5000)",
+  
+  "post_message.urgency_label": "ความเร่งด่วน",
+  
+  "post_message.post_button": "โพสต์ข้อความ",
+  "post_message.success": "โพสต์ข้อความของคุณสำเร็จแล้ว! โปรดรอผู้ขายติดต่อกลับ",
+
+  
+  "footer.quick_links": "ลิงก์ด่วน",
+  "footer.about_us": "เกี่ยวกับเรา",
+  
+  "footer.support": "สนับสนุน",
+  "footer.faq": "คำถามที่พบบ่อย",
+  "footer.help_center": "ศูนย์ช่วยเหลือ",
+  "footer.privacy_policy": "นโยบายความเป็นส่วนตัว",
+
+  "footer.description": "ตลาดที่ทันสมัยสำหรับความต้องการซื้อขายของคุณ เลือกดู ซื้อ และขายด้วยความมั่นใจ",
+
+  "footer.stay_updated": "รับข่าวสารล่าสุด",
+  "footer.newsletter_description": "สมัครรับจดหมายข่าวของเราเพื่อรับข้อเสนอและข้อมูลอัปเดตล่าสุด",
+  "footer.email_placeholder": "อีเมลของคุณ",
+  "footer.subscribe_button": "สมัครรับ",
+  "footer.copyright": "UniTrade. สงวนลิขสิทธิ์ทั้งหมด",
+    "footer.brand_unifooter": "Uni",
+    "footer.brand_trade": "Trade",
+    "footer.copyright": "UniTrade. สงวนลิขสิทธิ์ทั้งหมด"
+
+}
